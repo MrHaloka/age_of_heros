@@ -25,14 +25,14 @@ public:
 	TSet<FVector2d> GetAllUnblockedAdjacentNeighbours(const FVector2d& GridLocation);
 	TArray<uint32> GetAllUnblockedAdjacentNeighboursIds(const FVector2d& GridLocation);
 	bool IsBlock(const FVector2d& Location, float Radius, const uint32 IgnoreID = 0);
-	bool UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation);
+	void UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation);
 	bool IsUnitInGrid(const FVector2d& Vector2, uint32 IgnoreID = 0) const;
 	bool IsGridBlock(uint32 NeighbourId, bool BIsHologramCount = false);
 	bool IsGridBlock(FVector2d GridLocation, bool BIsHologramCount = false);
 	uint32 GetGridId(const FVector2d& GridLocation) const;
 	FVector2d GetGridFrom(uint32 Id) const;
 	TSet<FVector2d> GetAllBlockedNeighbours(const FVector2d& GridLocation);
-	AActor* GetActorInLocation(const FVector2d& Location, int8 Radius = 25);
+	AActor* GetActorInLocation(const FVector2d& Location, int8 Radius = 25, uint32 IgnoreId = 0);
 	void SpawnResource(const FVector& Location, TSubclassOf<ABaseResources> ResourceClass);
 	void RemoveUnitUnsafe(uint32 ID, FVector2d Location);
     void RemoveResourceUnsafe(uint32 ResourceId, FVector2d Location);

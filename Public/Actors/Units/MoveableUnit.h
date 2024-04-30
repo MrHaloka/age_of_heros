@@ -22,20 +22,25 @@ public:
 	float GetSpeed() const;
 	FVector2d GetGoalVelocity() const;
 	float GetAcceptableCollisionError() const;
+	void SetMovingCollisionBack();
+	void TurnoffMovingCollisionTemporary();
 	UPROPERTY(EditDefaultsOnly)
 	float Speed = 1;
 	FVector2d GetVelocity2d() const;
 	virtual FVector GetVelocity() const override;
-
+	void SetActorLocation2d(const FVector2d& NewLocation);
+	virtual int32 GetMovingCollisionRadius() const;
 protected:
 	void GoalReached();
+	FVector2d CalculateNewLocation(const float& DeltaSeconds);
 	void MoveTowardGoal(const float& DeltaSeconds);
 	virtual void FinalPathfindingGoalReached();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-	bool CheckIfNewLocationBlocked(const FVector2d& NewLocation) const;
-	bool BIsMoving = false;
-	bool BIsOnPath = false;
+	AActor* CheckIfNewLocationBlocked(const FVector2d& NewLocation) const;
+	bool bIsMoving = false;
+	bool bIsOnPath = false;
+	bool bHasMovingCollision = true;
 	FPathLinkedList*  Path = nullptr;
 	FVector2d GetLastPath();
 	FVector2d GoalVelocity = FVector2d::Zero();

@@ -158,7 +158,7 @@ AActor* FObjectsManager::GetActor(uint32 ActorId)
 	return Resources.FindChecked(ActorId);
 }
 
-AActor* FObjectsManager::GetActorInLocation(const FVector2d& Location, int8 Radius)
+AActor* FObjectsManager::GetActorInLocation(const FVector2d& Location, int8 Radius, uint32 IgnoreId)
 {
 	int32 MaxRadius = Radius * Radius - 1;
 	TOptional<uint32> ActorId = HashGrid->FindNearestInRadius(
@@ -177,6 +177,10 @@ AActor* FObjectsManager::GetActorInLocation(const FVector2d& Location, int8 Radi
 				return MaxRadius;
 			}
 			return FVector2d::DistSquared(Units.FindChecked(ID)->GetActorLocation2d(), Location);
+		},
+		[&IgnoreId](const uint32& ID)->bool
+		{
+			return IgnoreId == ID;
 		});
 	return ActorId.IsSet() ? GetActor(ActorId.GetValue()) : nullptr;
 }
@@ -274,14 +278,9 @@ bool FObjectsManager::IsBlock(const FVector2d& Location, float Radius, const uin
 	);
 }
 
-bool FObjectsManager::UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation)
+void FObjectsManager::UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation)
 {
-	if (IsBlock(NewLocation, Unit->GetCollisionRadius() - Unit->GetAcceptableCollisionError(), Unit->GetID()))
-	{
-		return false;
-	}
 	HashGrid->UpdatePoint(Unit->GetID(), Unit->GetActorLocation2d(), NewLocation);
-	return true;
 }
 
 bool FObjectsManager::IsUnitInGrid(const FVector2d& GridLocation, uint32 IgnoreID) const

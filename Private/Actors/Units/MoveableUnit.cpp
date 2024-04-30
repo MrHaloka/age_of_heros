@@ -15,7 +15,7 @@ AMoveableUnit::AMoveableUnit() : ABaseUnit()
 
 void AMoveableUnit::SetIsMoving(bool BMoving)
 {
-	BIsMoving = BMoving;
+	bIsMoving = BMoving;
 }
 
 void AMoveableUnit::SetupPathing(FPathLinkedList* NewPath)
@@ -38,7 +38,7 @@ void AMoveableUnit::UpdateActorRotation()
 
 void AMoveableUnit::StartPathing()
 {
-	BIsOnPath = true;
+	bIsOnPath = true;
 	Goal = GetLastPath();
 	GoalVelocity = GetComponentByClass<USteeringComponent>()->Seek(Goal);
 }
@@ -70,6 +70,17 @@ float AMoveableUnit::GetAcceptableCollisionError() const
 	return 10;
 }
 
+void AMoveableUnit::SetMovingCollisionBack()
+{
+	bHasMovingCollision = true;
+}
+
+void AMoveableUnit::TurnoffMovingCollisionTemporary()
+{
+	FTimerHandle TimerHandle;
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMoveableUnit::SetMovingCollisionBack, 2, false);
+}
+
 FVector2d AMoveableUnit::GetLastPath()
 {
 	FVector2d CurrentPath = Path->GetPath();
@@ -89,9 +100,20 @@ FVector AMoveableUnit::GetVelocity() const
 	return FVector(GetVelocity2d(), 0);
 }
 
+/**
+ * Avoid calling SetActorLocation directly unless you intend to handle ObjectsManager yourself.
+ * Direct calls can lead to desynchronization issues.
+ * Use this method instead.
+ */
+void AMoveableUnit::SetActorLocation2d(const FVector2d& NewLocation)
+{
+	GameStatics::GetObjectManager()->UnitMoved(this, NewLocation);
+	SetActorLocation(FVector(NewLocation, 0));
+}
+
 void AMoveableUnit::GoalReached()
 {
-	if (Path != nullptr && BIsOnPath)
+	if (Path != nullptr && bIsOnPath)
 	{
 		StartPathing();
 		return;
@@ -102,23 +124,33 @@ void AMoveableUnit::GoalReached()
 	FinalPathfindingGoalReached();
 }
 
+FVector2d AMoveableUnit::CalculateNewLocation(const float& DeltaSeconds)
+{
+	const FVector2d Movement = CurrentVelocity * DeltaSeconds;
+	FVector2d NewLocation = GetActorLocation2d() + Movement;
+	UE_LOG(LogTemp, Warning, TEXT("Movement is %s"), *Movement.ToString())
+	if (FVector2d::DistSquared(GetActorLocation2d(), Goal) <= Movement.SquaredLength())
+	{
+		NewLocation = Goal;
+	}
+	return NewLocation;
+}
+
 
 void AMoveableUnit::MoveTowardGoal(const float& DeltaSeconds)
 {
 	CurrentVelocity = GetComponentByClass<USteeringComponent>()->Seek(Goal);
 	CurrentVelocity = GetComponentByClass<USteeringComponent>()->Avoidance();
-	const FVector2d Movement = CurrentVelocity * DeltaSeconds;
-	FVector2d NewLocation = GetActorLocation2d() + Movement;
-	if (FVector2d::DistSquared(GetActorLocation2d(), Goal) <= Movement.SquaredLength())
+	FVector2d NewLocation = CalculateNewLocation(DeltaSeconds);
+	if (AActor* BlockingActor = CheckIfNewLocationBlocked(NewLocation))
 	{
-		NewLocation = Goal;
+		if (BlockingActor->IsA(AMoveableUnit::StaticClass()))
+		{
+			DrawDebugBox(GetWorld(), GetActorLocation(), FVector(25,25,200), FColor::Red, false);
+			return;
+		}
 	}
-	if (CheckIfNewLocationBlocked(NewLocation))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("New Location Blocked"))
-		return;
-	}
-	SetActorLocation(FVector(NewLocation, 0));
+	SetActorLocation2d(NewLocation);
 	UpdateActorRotation();
 	if (GetActorLocation2d() == Goal)
 	{
@@ -128,7 +160,7 @@ void AMoveableUnit::MoveTowardGoal(const float& DeltaSeconds)
 
 void AMoveableUnit::FinalPathfindingGoalReached()
 {
-	BIsOnPath = false;
+	bIsOnPath = false;
 }
 
 void AMoveableUnit::BeginPlay()
@@ -139,13 +171,22 @@ void AMoveableUnit::BeginPlay()
 void AMoveableUnit::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (BIsMoving)
+	if (bIsMoving)
 	{
 		MoveTowardGoal(DeltaSeconds);
 	}
 }
 
-bool AMoveableUnit::CheckIfNewLocationBlocked(const FVector2d& NewLocation) const
+AActor* AMoveableUnit::CheckIfNewLocationBlocked(const FVector2d& NewLocation) const
 {
-	return !GameStatics::GetObjectManager()->UnitMoved(this, FVector2d(NewLocation));
+	return GameStatics::GetObjectManager()->GetActorInLocation(NewLocation, GetCollisionRadius()-GetAcceptableCollisionError(), GetID());
+}
+
+int32 AMoveableUnit::GetMovingCollisionRadius() const
+{
+	if (bHasMovingCollision)
+	{
+		return Super::GetCollisionRadius();
+	}
+	return 1;
 }
