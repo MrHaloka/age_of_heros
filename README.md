@@ -40,7 +40,7 @@ The development of this project is structured into three distinct phases, each a
 __________________________________________________________________________________________________________
 ### Here's some highlights :)
 #### Unit avoidance.
-![multi agents avoidance](/showcases/avoidance.gif)  
+![multi agents avoidance](/showcases/avoidance2.gif)  
 #### Villagers harvesting resources
 ![villagers harvesting resources](/showcases/harvesting.gif)
 #### Path finding (Theta* + post process)
