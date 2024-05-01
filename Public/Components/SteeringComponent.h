@@ -11,13 +11,11 @@ class AOE2_API USteeringComponent : public UActorComponent
 public:
 	USteeringComponent();
 	FVector2d Seek(FVector2d Goal);
-	void Flee();
-	void AddActiveIgnoreId(uint32 Id);
-	FVector2d Avoidance(AMoveableUnit* MoveableUnit, const float& TTC);
 	FVector2d Avoidance();
+	FVector2d Avoidance(AMoveableUnit* MoveableUnit, const float& TTC);
+	void Flee();
 protected:
 	void RemoveIgnoreId();
 	double TimeToCollision(uint32 NeighbourId);
-	uint32 ActiveIgnoreId = 0;
-	FTimerHandle IgnoreTimer;
+	uint32 LastObstacleId = 0;
 };

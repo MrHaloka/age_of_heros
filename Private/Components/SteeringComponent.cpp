@@ -15,34 +15,20 @@ FVector2d USteeringComponent::Seek(FVector2d Goal)
 	return GoalDirection * StaticCast<AMoveableUnit*>(GetOwner())->GetSpeed();
 }
 
-void USteeringComponent::AddActiveIgnoreId(uint32 Id)
-{
-	ActiveIgnoreId = Id;
-	GetWorld()->GetTimerManager().SetTimer(IgnoreTimer, this, &USteeringComponent::RemoveIgnoreId, 1.5, false);
-}
-
 FVector2d USteeringComponent::Avoidance(AMoveableUnit* MoveableObstacle, const float& TTC)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TTC IS %f"), TTC);
-	const float TTCWeight = FMath::Square(TTC) / 16;
-	const FVector2d OwnerDirection = StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d().GetSafeNormal();
-	const FVector2d ObstacleDirection = MoveableObstacle->GetVelocity2d().GetSafeNormal();
-	const float DotProduct = FVector2d::DotProduct(OwnerDirection, ObstacleDirection);
-	if (!ObstacleDirection.IsZero() && DotProduct > -0.2) 
+	UE_LOG(LogTemp, Warning, TEXT("TTC IS %f"), TTC)
+	if (TTC == 0 || LastObstacleId != 0 && LastObstacleId != MoveableObstacle->GetID())
 	{
-		MoveableObstacle->GetComponentByClass<USteeringComponent>()->AddActiveIgnoreId(StaticCast<AMoveableUnit*>(GetOwner())->GetID());
-		return StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d() * TTCWeight ;
+		MoveableObstacle->TurnoffMovingCollisionTemporary();
+		return StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d();
 	}
-	const FVector2d LeftSide = (OwnerDirection + FVector2d(OwnerDirection.Y, -OwnerDirection.X)).GetSafeNormal();
-	const FVector2d RightSide = (OwnerDirection + FVector2d(-OwnerDirection.Y, OwnerDirection.X)).GetSafeNormal();
-	const FVector2d DirectionTowardObstacle = MoveableObstacle->GetActorLocation2d() - StaticCast<AMoveableUnit*>(GetOwner())->GetActorLocation2d();
-	const FVector2d RelativeVelocity = MoveableObstacle->GetVelocity2d() - StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d();
-	const float DirectionDotVelocity = DirectionTowardObstacle.Dot(RelativeVelocity);
-	if (DirectionDotVelocity < 0)
-	{
-		return (RightSide + OwnerDirection * TTCWeight).GetSafeNormal() * StaticCast<AMoveableUnit*>(GetOwner())->GetSpeed();
-	}
-	return (LeftSide + OwnerDirection * TTCWeight).GetSafeNormal() * StaticCast<AMoveableUnit*>(GetOwner())->GetSpeed();
+	double TTCWeight = (0.4-TTC)/TTC;
+	LastObstacleId = MoveableObstacle->GetID();
+	const FVector2d ObstacleAtCollision = MoveableObstacle->GetVelocity2d() * TTC + MoveableObstacle->GetActorLocation2d();
+	const FVector2d OwnerAtCollision = StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d() * TTC + StaticCast<AMoveableUnit*>(GetOwner())->GetActorLocation2d();
+	const FVector2d AvoidanceForce = (OwnerAtCollision - ObstacleAtCollision).GetSafeNormal();
+	return (StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d().GetSafeNormal() + AvoidanceForce * TTCWeight).GetSafeNormal() * StaticCast<AMoveableUnit*>(GetOwner())->GetSpeed();
 }
 
 FVector2d USteeringComponent::Avoidance()
@@ -52,25 +38,17 @@ FVector2d USteeringComponent::Avoidance()
 		StaticCast<AMoveableUnit*>(GetOwner())->GetActorLocation2d(),
 		StaticCast<AMoveableUnit*>(GetOwner())->GetID(),
 		200
-		);
+	);
 	for (uint32 NeighbourID : Neighbours)
 	{
-		if (NeighbourID == ActiveIgnoreId)
+		double TTC = TimeToCollision(NeighbourID);
+		if (FMath::IsWithin(TTC, 0.0, 0.4))
 		{
-			continue;
-		}
-		double TTC = TimeToCollision(NeighbourID) * 10;
-		if (FMath::IsWithin(TTC, 0, 4))
-		{
-			return Avoidance(StaticCast<AMoveableUnit*>(GameStatics::GetObjectManager()->GetUnits().FindChecked(NeighbourID)), TTC); 
+			return Avoidance(StaticCast<AMoveableUnit*>(GameStatics::GetObjectManager()->GetUnits().FindChecked(NeighbourID)), TTC);
 		}
 	}
+	LastObstacleId = 0;
 	return StaticCast<AMoveableUnit*>(GetOwner())->GetVelocity2d();
-}
-
-void USteeringComponent::RemoveIgnoreId()
-{
-	ActiveIgnoreId = 0;
 }
 
 /**
@@ -88,7 +66,7 @@ double USteeringComponent::TimeToCollision(uint32 NeighbourId)
 {
 	const AMoveableUnit* Unit = StaticCast<AMoveableUnit*>(GetOwner());
 	const AMoveableUnit* Neighbour = StaticCast<AMoveableUnit*>(GameStatics::GetObjectManager()->GetUnits().FindChecked(NeighbourId));
-	double Radii = Unit->GetCollisionRadius() + Neighbour->GetCollisionRadius();
+	double Radii = Unit->GetMovingCollisionRadius() + Neighbour->GetMovingCollisionRadius();
 	FVector2d W = FVector2d(Neighbour->GetActorLocation() - Unit->GetActorLocation());
 	double C = W.Dot(W) - (Radii * Radii);
 	// already colliding 
