@@ -56,6 +56,12 @@ FPathLinkedList* FThetaStar::CalculateThePath()
 	}
 	FPathLinkedList* Path = LoadThePath();
 	PostProcess(Path);
+	if (Path->GetPrevious() != nullptr)
+	{
+		FPathLinkedList* OldPath = Path;
+		Path = Path->GetPrevious();
+		delete OldPath;
+	}
 	return Path;
 }
 
@@ -144,12 +150,7 @@ FPathLinkedList* FThetaStar::LoadThePath()
 		Path = NewPath;
 		LastVertexId = LastVertex.Parent;
 	}
-	if (Path->GetPrevious() != nullptr)
-	{
-		FPathLinkedList* OldPath = Path;
-		Path = Path->GetPrevious();
-		delete OldPath;
-	}
+	Path->SetPath(StartingNode);
 	return Path;
 }
 
@@ -222,8 +223,7 @@ TSet<FVector2d> FThetaStar::ChangePathForCollisionSize(TArray<FVector2d>& Blocke
  */
 FVector2d FThetaStar::CalculateTheCollisionFreePoint(const FVector2d& BlockingGridLocation, const FVector2d& Start, const FVector2d& End)
 {	
-	const float SQRT2INV = 0.7; // Representing the 45-degree vector's normal as FVector(0.7, 0.7) where each component is approximately 1.0/sqrt(2).
-	FVector2d NormalVector = FVector2d(SQRT2INV, SQRT2INV);
+	FVector2d DirectionVector = FVector2d(1, 1);
 	FVector2d Edge = BlockingGridLocation + FVector2d(100, 100);
 	float MaxDistance = ProximityDistanceToLine(BlockingGridLocation, Start, End);
 	float GridRight = ProximityDistanceToLine(FVector2d(BlockingGridLocation.X + 100, BlockingGridLocation.Y), Start, End) ;
@@ -232,21 +232,21 @@ FVector2d FThetaStar::CalculateTheCollisionFreePoint(const FVector2d& BlockingGr
 	if (GridRight > MaxDistance)
 	{
 		MaxDistance = GridRight;
-		NormalVector = FVector2d(-SQRT2INV, SQRT2INV);
+		DirectionVector = FVector2d(-1, 1);
 		Edge = BlockingGridLocation + FVector2d(0, 100);
 	}
 	if (GridTop > MaxDistance)
 	{
 		MaxDistance = GridTop;
-		NormalVector = FVector2d(SQRT2INV, -SQRT2INV);
+		DirectionVector = FVector2d(1, -1);
 		Edge = BlockingGridLocation + FVector2d(100, 0);
 	}
 	if (GridTopRight > MaxDistance)
 	{
-		NormalVector = FVector2d(-SQRT2INV, -SQRT2INV);
+		DirectionVector = FVector2d(-1, -1);
 		Edge = BlockingGridLocation + FVector2d(0, 0);
 	}
-	return Edge + NormalVector * CollisionRadius;
+	return Edge + DirectionVector * CollisionRadius;
 }
 
 /**
