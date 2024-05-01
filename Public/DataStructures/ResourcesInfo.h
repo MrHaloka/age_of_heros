@@ -10,7 +10,7 @@ struct FResourcesInfo : public FTableRowBase
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FResourcesInfo() :Name(""),Type(EResource::None), PerSecond(0), MaxResource(0)
+	FResourcesInfo() :Name(""),Type(EResource::None), PerSecond(0), MaxResource(0), MiniMapColor(FColor::White)
 	{
 	}
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -23,4 +23,6 @@ public:
 	int32 MaxResource;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ABaseResources> ResourceClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FColor MiniMapColor;
 };

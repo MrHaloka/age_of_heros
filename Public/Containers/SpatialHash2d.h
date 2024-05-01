@@ -16,7 +16,7 @@ public:
 	bool RemovePoint(uint32 PointID, const FVector2d& Location);
 	bool RemovePointUnsafe(uint32 PointID, const FVector2d& Location);
 	void RemovePointsUnsafe(const uint32 PointID, const FVector2d& Location, const FVector2d& UnitSize);
-	void UpdatePoint(uint32 PointID, const FVector2d& OldLocation, const FVector2d& CurrentLocation);
+	bool UpdatePoint(uint32 PointID, const FVector2d& OldLocation, const FVector2d& CurrentLocation);
 	void UpdatePointUnsafe(uint32 PointID, const FVector2d& OldLocation, const FVector2d& CurrentLocation);
 	TOptional<uint32> FindNearestInRadius(
 		const FVector2d& QueryPoint,

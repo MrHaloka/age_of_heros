@@ -95,13 +95,13 @@ void FSpatialHash2d::RemovePointsUnsafe(const uint32 PointID, const FVector2d& L
  * @param OldLocation the old location associated with this point's id
  * @param CurrentLocation the current location for this point
  */
-void FSpatialHash2d::UpdatePoint(const uint32 PointID, const FVector2d& OldLocation, const FVector2d& CurrentLocation)
+bool FSpatialHash2d::UpdatePoint(const uint32 PointID, const FVector2d& OldLocation, const FVector2d& CurrentLocation)
 {
 	uint32 OldIndexID = Indexer.ToGrid(OldLocation);
 	uint32 CurrentIndexID = Indexer.ToGrid(CurrentLocation);
 	if (OldIndexID == CurrentIndexID)
 	{
-		return;
+		return false;
 	}
 	bool BWasAtOldGrid;
 	{
@@ -113,6 +113,7 @@ void FSpatialHash2d::UpdatePoint(const uint32 PointID, const FVector2d& OldLocat
 		FScopeLock Lock(&CriticalSection);
 		Hash.Add(CurrentIndexID, PointID);
 	}
+	return true;
 }
 
 /**

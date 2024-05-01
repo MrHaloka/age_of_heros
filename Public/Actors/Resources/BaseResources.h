@@ -14,6 +14,7 @@ class AOE2_API ABaseResources : public AActor
 public:	
 	ABaseResources();
 	ETeams GetTeam();
+	FColor GetMiniMapColor();
 	void SetID(uint32 ID);
 	uint32 GetID() const;
 	void RemoveFromResource(float Amount);

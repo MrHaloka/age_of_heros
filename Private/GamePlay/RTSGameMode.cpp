@@ -1,5 +1,6 @@
 #include "GamePlay/RTSGameMode.h"
 
+#include "Actors/Resources/BaseResources.h"
 #include "GamePlay/GameStatics.h"
 #include "Managers/ObjectsManager.h"
 #include "GamePlay/PlayerSpectatorPawn.h"
@@ -68,6 +69,11 @@ FHarvestingManager* ARTSGameMode::GetHarvestingManager()
 	return HarvestingManager;
 }
 
+void ARTSGameMode::LoadDefaultActors(ARTSHUD* PlayerHUD)
+{
+	MapGenerator->AddAllDefaultsToMiniMap(PlayerHUD);
+}
+
 uint16 ARTSGameMode::GetGridSize() const
 {
 	return GridSize;
@@ -76,4 +82,21 @@ uint16 ARTSGameMode::GetGridSize() const
 uint16 ARTSGameMode::GetMapSize() const
 {
 	return MapSize;
+}
+
+void ARTSGameMode::UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation)
+{
+	AActor* ActorInGrid = ObjectsManager->GetActorInGrid(Unit->GetActorLocation2d());
+	if (ActorInGrid == nullptr)
+	{
+		GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD()->UnitMoved(Unit->GetActorLocation2d(), NewLocation);
+	}
+	else if(ABaseResources* Resource = Cast<ABaseResources>(ActorInGrid))
+	{
+		GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD()->UnitMoved(Unit->GetActorLocation2d(), NewLocation, Resource->GetMiniMapColor());
+	}
+	else
+	{
+		GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD()->UnitMoved(Unit->GetActorLocation2d(), NewLocation, FColor::Blue);
+	}
 }

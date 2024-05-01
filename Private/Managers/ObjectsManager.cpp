@@ -11,6 +11,8 @@
 #include "Actors/Units/MoveableUnit.h"
 #include "Actors/Units/Buildings/BaseBuilding.h"
 #include "Actors/Resources/BaseResources.h"
+#include "GamePlay/GameStatics.h"
+#include "GamePlay/PlayerSpectatorPawn.h"
 
 FObjectsManager::FObjectsManager(UWorld* NewWorld, uint8 GridSize, uint16 CellSize) : World(NewWorld)
 {
@@ -52,9 +54,11 @@ void FObjectsManager::AddUnitToHash(ABaseUnit& Unit, const FVector2d& UnitSize, 
 	CurrentId += 1;
 }
 
-void FObjectsManager::SpawnResource(const FVector& Location, TSubclassOf<ABaseResources> ResourceClass)
+ABaseResources* FObjectsManager::SpawnResource(const FVector& Location, TSubclassOf<ABaseResources> ResourceClass)
 {
-	AddResourceToHash(*World->SpawnActor<ABaseResources>(ResourceClass, Location, FRotator::ZeroRotator));
+	ABaseResources* NewResource = World->SpawnActor<ABaseResources>(ResourceClass, Location, FRotator::ZeroRotator);
+	AddResourceToHash(*NewResource);
+	return NewResource;
 }
 
 void FObjectsManager::AddResourceToHash(ABaseResources& Resource)
@@ -280,9 +284,25 @@ bool FObjectsManager::IsBlock(const FVector2d& Location, float Radius, const uin
 
 void FObjectsManager::UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation)
 {
-	HashGrid->UpdatePoint(Unit->GetID(), Unit->GetActorLocation2d(), NewLocation);
+	if(HashGrid->UpdatePoint(Unit->GetID(), Unit->GetActorLocation2d(), NewLocation))
+	{
+		GameStatics::GetRTSGameMode()->UnitMoved(&*Unit, NewLocation);
+	}
 }
 
+AActor* FObjectsManager::GetActorInGrid(const FVector2d& GridLocation)
+{
+	TOptional<uint32> PointId = HashGrid->GetPointInGrid(GridLocation, [](const uint32& ID)-> bool{return true;});
+	if (PointId.IsSet())
+	{
+		if (Units.Contains(PointId.GetValue()))
+		{
+			return Units.FindChecked(PointId.GetValue());
+		}
+		return Resources.FindChecked(PointId.GetValue());
+	}
+	return nullptr;
+}
 bool FObjectsManager::IsUnitInGrid(const FVector2d& GridLocation, uint32 IgnoreID) const
 {
 	return HashGrid->GetPointInGrid(

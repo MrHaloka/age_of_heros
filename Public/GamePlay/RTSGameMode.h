@@ -39,14 +39,15 @@ protected:
 	/**
 	 * It needs to be set by the map generator or from a menu. It's hardcoded for now since I don't have any dynamic maps.
 	 */
-	const uint8 GridSize = 200;
+	const uint8 GridSize = 100;
 	const uint32 MapSize = 20000;
 public:
 	FObjectsManager* GetObjectManager() const;
-	FCollisionManager* GetCollisionManager() const;
 	FUpgradeManager* GetUpgradeManager() const;
 	FDropoffsManager* GetDropoffManager();
 	FHarvestingManager* GetHarvestingManager();
+	void LoadDefaultActors(ARTSHUD* PlayerHUD);
 	uint16 GetGridSize() const;
 	uint16 GetMapSize() const;
+	void UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation);
 };

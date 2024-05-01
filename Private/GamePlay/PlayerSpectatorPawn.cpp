@@ -92,5 +92,5 @@ ETeams APlayerSpectatorPawn::GetPlayerTeam()
 ARTSHUD* APlayerSpectatorPawn::GetRTSHUD()
 {
 	APlayerController* PlayerController = CastChecked<APlayerController>(GetController());
-	return CastChecked<ARTSHUD>(PlayerController->GetHUD());
+	return Cast<ARTSHUD>(PlayerController->GetHUD());
 }

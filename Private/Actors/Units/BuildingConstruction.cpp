@@ -123,6 +123,10 @@ void ABuildingConstruction::Starting()
 	HologramMesh->SetVisibility(false, false);
 	UnderConstructionMesh->SetVisibility(true);
 	GameStatics::GetObjectManager()->RemoveHologram(GetID());
+	if (ARTSHUD* RTSHUD = GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD())
+	{
+		RTSHUD->UnitAdded(GetActorLocation2d(), FColor::Blue);
+	}
 }
 
 TOptional<FVector2d> ABuildingConstruction::GetClosestEmptyBuilderLocation(const FVector2d& BuilderLocation)

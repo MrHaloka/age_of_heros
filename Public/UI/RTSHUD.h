@@ -5,6 +5,7 @@
 #include "Actors/Units/Villager.h"
 #include "RTSHUD.generated.h"
 
+class UMiniMapWidget;
 class UVillagerPanel;
 class UUnitPanelWidget;
 class ABaseBuilding;
@@ -26,6 +27,10 @@ public:
 	void ShowVillagerPanel(AVillager* Villager);
 	UVillagerPanel* GetVillagerPanel();
 	virtual void Tick(float DeltaSeconds) override;
+	void UnitMoved(const FVector2d& OldLocation, const FVector2d& NewLocation, const FColor& OldSpotColor);
+	void UnitMoved(const FVector2d& OldLocation, const FVector2d& NewLocation);
+	void UnitAdded(const FVector2d& Location, const FColor& Color);
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UResourcePanelWidget> ResourcePanelWidget;
@@ -37,8 +42,12 @@ protected:
 	UBuildingsPanelWidget* TownCenterPanel;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UVillagerPanel> VillagerPanelWidget;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UMiniMapWidget> MiniMapWidget;
 	UPROPERTY()
 	UVillagerPanel* VillagerPanel;
+	UPROPERTY()
+	UMiniMapWidget* MiniMap;
 	UPROPERTY()
 	UUserWidget* ActiveWidget = nullptr;
 	

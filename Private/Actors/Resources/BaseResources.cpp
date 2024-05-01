@@ -19,6 +19,11 @@ ETeams ABaseResources::GetTeam()
 	return ETeams::White;
 }
 
+FColor ABaseResources::GetMiniMapColor()
+{
+	return GameStatics::GetResourceByID(ResourceId)->MiniMapColor;
+}
+
 FVector2d ABaseResources::GetActorLocation2d() const
 {
 	return FVector2d(GetActorLocation());

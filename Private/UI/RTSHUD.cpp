@@ -6,6 +6,7 @@
 #include "UI/BuildingsPanelWidget.h"
 #include "UI/UnitPanelWidget.h"
 #include "UI/VillagerPanel.h"
+#include "UI/MiniMapWidget.h"
 
 ARTSHUD::ARTSHUD()
 {
@@ -23,6 +24,9 @@ void ARTSHUD::BeginPlay()
 	VillagerPanel = CreateWidget<UVillagerPanel>(UGameplayStatics::GetPlayerController(GetWorld(), 0), VillagerPanelWidget);
 	VillagerPanel->SetVisibility(ESlateVisibility::Collapsed);
 	VillagerPanel->AddToViewport();
+
+	MiniMap = CreateWidget<UMiniMapWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), MiniMapWidget);
+	MiniMap->AddToViewport();
 }
 
 void ARTSHUD::UpdateResources(const FResources Resources)
@@ -56,6 +60,21 @@ UVillagerPanel* ARTSHUD::GetVillagerPanel()
 void ARTSHUD::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+}
+
+void ARTSHUD::UnitMoved(const FVector2d& OldLocation, const FVector2d& NewLocation, const FColor& OldSpotColor)
+{
+	MiniMap->UnitMoved(OldLocation, NewLocation, OldSpotColor);
+}
+
+void ARTSHUD::UnitMoved(const FVector2d& OldLocation, const FVector2d& NewLocation)
+{
+	MiniMap->UnitMoved(OldLocation, NewLocation);
+}
+
+void ARTSHUD::UnitAdded(const FVector2d& Location, const FColor& Color)
+{
+	MiniMap->UnitAdded(Location, Color);
 }
 
 void ARTSHUD::ShowVillagerPanel(AVillager* Villager)
