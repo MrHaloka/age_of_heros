@@ -27,9 +27,10 @@ public:
 	void ShowVillagerPanel(AVillager* Villager);
 	UVillagerPanel* GetVillagerPanel();
 	virtual void Tick(float DeltaSeconds) override;
-	void UnitMoved(const FVector2d& OldLocation, const FVector2d& NewLocation, const FColor& OldSpotColor);
-	void UnitMoved(const FVector2d& OldLocation, const FVector2d& NewLocation);
+	void UnitMoved(uint32 Id, const FVector2d& OldLocation, const FVector2d& NewLocation, const FColor& OldSpotColor);
+	void UnitMoved(uint32 Id, const FVector2d& OldLocation, const FVector2d& NewLocation);
 	void UnitAdded(const FVector2d& Location, const FColor& Color);
+	void AddAlertAnimation(uint32 Id, const FVector2d& Location);
 
 protected:
 	UPROPERTY(EditDefaultsOnly)

@@ -19,7 +19,7 @@ ARTSGameMode::ARTSGameMode()
 void ARTSGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
-	ObjectsManager = new FObjectsManager(GetWorld(), GridSize, 100);
+	ObjectsManager = new FObjectsManager(GetWorld(), GridSize, CellSize);
 	UpgradeManager = new FUpgradeManager();
 	GameStatics::Initialize(*Units, *Buildings, *Upgrades, *ResourcesInfo);
 	MapGenerator = new FMapGenerator(*ObjectsManager);
@@ -74,12 +74,17 @@ void ARTSGameMode::LoadDefaultActors(ARTSHUD* PlayerHUD)
 	MapGenerator->AddAllDefaultsToMiniMap(PlayerHUD);
 }
 
-uint16 ARTSGameMode::GetGridSize() const
+uint8 ARTSGameMode::GetGridSize() const
 {
 	return GridSize;
 }
 
-uint16 ARTSGameMode::GetMapSize() const
+uint16 ARTSGameMode::GetCellSize() const
+{
+	return CellSize;
+}
+
+uint32 ARTSGameMode::GetMapSize() const
 {
 	return MapSize;
 }
@@ -87,16 +92,17 @@ uint16 ARTSGameMode::GetMapSize() const
 void ARTSGameMode::UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation)
 {
 	AActor* ActorInGrid = ObjectsManager->GetActorInGrid(Unit->GetActorLocation2d());
+	ARTSHUD* HUD = GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD();
 	if (ActorInGrid == nullptr)
 	{
-		GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD()->UnitMoved(Unit->GetActorLocation2d(), NewLocation);
+		HUD->UnitMoved(Unit->GetID(),Unit->GetActorLocation2d(), NewLocation);
 	}
 	else if(ABaseResources* Resource = Cast<ABaseResources>(ActorInGrid))
 	{
-		GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD()->UnitMoved(Unit->GetActorLocation2d(), NewLocation, Resource->GetMiniMapColor());
+		HUD->UnitMoved(Unit->GetID(),Unit->GetActorLocation2d(), NewLocation, Resource->GetMiniMapColor());
 	}
 	else
 	{
-		GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD()->UnitMoved(Unit->GetActorLocation2d(), NewLocation, FColor::Blue);
+		HUD->UnitMoved(Unit->GetID(),Unit->GetActorLocation2d(), NewLocation, FColor::Blue);
 	}
 }
