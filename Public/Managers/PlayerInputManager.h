@@ -25,6 +25,8 @@ public:
 	void Initialize(APlayerSpectatorPawn* Player, UInputComponent* InputComponent);
 	void Zoom(const FInputActionValue& InputActionValue);
 	void Select();
+	void SelectEnded();
+	void SelectStarted();
 	void UnSelect();
 	void OnPlayerBegunPlay();
 
@@ -44,9 +46,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category=Input)
 	float MinZoomIn = 1000;
 	const FVector2d InvalidLocation;
+	UPROPERTY()
 	USpringArmComponent* SpringArmComponent;
+	UPROPERTY()
 	APlayerSpectatorPawn* Player;
+	UPROPERTY()
 	UCursorSelectionComponent* CursorSelectionComponent;
+	UPROPERTY()
 	UUnitControllerComponent* UnitControllerComponent;
+	UPROPERTY()
 	UScreenScrollComponent* ScrollComponent;
 };

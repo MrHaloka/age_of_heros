@@ -21,16 +21,28 @@ void UCursorSelectionComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-TOptional<FVector2d> UCursorSelectionComponent::PlayerClickedNewLocation(APlayerSpectatorPawn* Player)
+FVector2d UCursorSelectionComponent::PlayerClickedNewLocation()
 {
+	const APlayerSpectatorPawn* Player = StaticCast<APlayerSpectatorPawn*>(GetOwner());
 	FVector Location, Direction;
 	CastChecked<APlayerController>(Player->GetController())->DeprojectMousePositionToWorld(Location, Direction);
+	double Distance = Location.Z / Direction.Z;
 	FHitResult Hit;
-	FVector End = Location + Direction * 10000;
+	FVector End = Location - Direction * Distance;
 	FCollisionQueryParams QueryParams = FCollisionQueryParams(SCENE_QUERY_STAT(CursorTracer), false, Player->GetOwner());
 	if (Player->GetWorld()->LineTraceSingleByChannel(Hit, Location, End, ECC_Visibility, QueryParams))
 	{
 		return FVector2d(Hit.Location).ClampAxes(0, GameStatics::GetRTSGameMode()->GetMapSize());
 	}
-	return NullOpt;
+	return FVector2d(End);
+}
+
+void UCursorSelectionComponent::StoreTheWorldLocation()
+{
+	LastStoredLocation = PlayerClickedNewLocation();
+}
+
+FVector2d UCursorSelectionComponent::GetLastStoredLocation()
+{
+	return LastStoredLocation;
 }

@@ -36,6 +36,8 @@ void UPlayerInputManager::Initialize(APlayerSpectatorPawn* InitPlayer, UInputCom
 	{
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &UPlayerInputManager::Zoom);
 		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Started, this, &UPlayerInputManager::Select);
+		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Triggered, this, &UPlayerInputManager::SelectStarted);
+		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Completed, this, &UPlayerInputManager::SelectEnded);
 		EnhancedInputComponent->BindAction(UnselectAction, ETriggerEvent::Started, this, &UPlayerInputManager::UnSelect);
 	}
 	
@@ -71,17 +73,44 @@ void UPlayerInputManager::Zoom(const FInputActionValue& InputActionValue)
 
 void UPlayerInputManager::Select()
 {
-	TOptional<FVector2d> ClickedLocationIn2D = CursorSelectionComponent->PlayerClickedNewLocation(Player);
-	if (!ClickedLocationIn2D.IsSet())
+	CursorSelectionComponent->StoreTheWorldLocation();
+}
+
+void UPlayerInputManager::SelectEnded()
+{
+	const FVector2d EndLocation = CursorSelectionComponent->PlayerClickedNewLocation();
+	if (EndLocation.Equals(CursorSelectionComponent->GetLastStoredLocation()))
 	{
-		return;
+		if (Player->GetPlayerActivity() == EPlayerActivity::Building)
+		{
+			Player->GetRTSHUD()->GetVillagerPanel()->PlaceBuilding(EndLocation);
+			return;
+		}
+		UnitControllerComponent->NewLocationSelected(EndLocation);
 	}
-	if (Player->GetPlayerActivity() == EPlayerActivity::Building)
+	else
 	{
-		Player->GetRTSHUD()->GetVillagerPanel()->PlaceBuilding(ClickedLocationIn2D.GetValue());
-		return;
+		UnitControllerComponent->SelectionBox(CursorSelectionComponent->GetLastStoredLocation(), EndLocation);
 	}
-	UnitControllerComponent->NewLocationSelected(ClickedLocationIn2D.GetValue());
+	Player->GetRTSHUD()->EndSelection();
+}
+
+void UPlayerInputManager::SelectStarted()
+{
+	UGameViewportClient* GameViewport = Player->GetWorld()->GetGameViewport();
+	check(GameViewport);
+	if (GameViewport->Viewport->HasFocus())
+	{
+		FVector2D MousePosition;
+		if (GameViewport->GetMousePosition(MousePosition))
+		{
+			FVector2D ScreenPosition = FVector2D(
+		   MousePosition.X / GameViewport->Viewport->GetSizeXY().X,
+		   MousePosition.Y / GameViewport->Viewport->GetSizeXY().Y
+			);
+			Player->GetRTSHUD()->UpdateSelectionBox(ScreenPosition);
+		}
+	}
 }
 
 void UPlayerInputManager::UnSelect()

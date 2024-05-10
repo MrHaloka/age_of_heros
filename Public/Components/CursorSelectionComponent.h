@@ -15,7 +15,10 @@ public:
 	UCursorSelectionComponent();
 protected:
 	virtual void BeginPlay() override;
+	FVector2d LastStoredLocation;
 public:	
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	TOptional<FVector2d> PlayerClickedNewLocation(APlayerSpectatorPawn* Player);
+	FVector2d PlayerClickedNewLocation();
+	void StoreTheWorldLocation();
+	FVector2d GetLastStoredLocation();
 };
