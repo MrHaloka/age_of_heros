@@ -9,7 +9,7 @@
 #include "GamePlay/GameStatics.h"
 #include "GamePlay/PlayerSpectatorPawn.h"
 #include "Managers/ObjectsManager.h"
-#include "Actors/Units/Villager.h"
+#include "GamePlay/RTSGameMode.h"
 
 UUnitControllerComponent::UUnitControllerComponent()
 {
@@ -33,6 +33,18 @@ void UUnitControllerComponent::TickComponent(float DeltaTime, ELevelTick TickTyp
 void UUnitControllerComponent::UnselectUnits()
 {
 	SelectedUnits.Empty();
+}
+
+void UUnitControllerComponent::SelectionBox(FVector2d StartLocation, FVector2d EndLocation)
+{
+	UnselectUnits();
+	StartLocation = StartLocation.ClampAxes(0, GameStatics::GetRTSGameMode()->GetMapSize());
+	EndLocation = EndLocation.ClampAxes(0, GameStatics::GetRTSGameMode()->GetMapSize());
+	const FVector2d MaxPointOnRectangle = FVector2d::Max(StartLocation, EndLocation);
+	const FVector2d MinPointOnRectangle = FVector2d::Min(StartLocation, EndLocation);
+	check(ObjectsManager != nullptr)
+	TSet<ABaseUnit*> Units = ObjectsManager->GetMoveableInsideRectangle(MaxPointOnRectangle, MinPointOnRectangle);
+	SelectedUnits.Append(Units);
 }
 
 /**

@@ -17,6 +17,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void NewLocationSelected(const FVector2d& Location);
 	void UnselectUnits();
+	void SelectionBox(FVector2d StartLocation, FVector2d EndLocation);
+
 protected:
 	void CreateHandlers();
 	virtual void BeginPlay() override;
