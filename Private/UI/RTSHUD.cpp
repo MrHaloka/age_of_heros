@@ -1,12 +1,14 @@
 #include "UI/RTSHUD.h"
 
 #include "DataStructures/Resources.h"
+#include "Engine/Canvas.h"
 #include "Kismet/GameplayStatics.h"
 #include "UI/ResourcePanelWidget.h"
 #include "UI/BuildingsPanelWidget.h"
 #include "UI/UnitPanelWidget.h"
 #include "UI/VillagerPanel.h"
 #include "UI/MiniMapWidget.h"
+#include "UI/UnitSlectionWidget.h"
 
 ARTSHUD::ARTSHUD()
 {
@@ -15,8 +17,13 @@ ARTSHUD::ARTSHUD()
 void ARTSHUD::BeginPlay()
 {
 	Super::BeginPlay();
+	
+	UnitSelection = CreateWidget<UUnitSlectionWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), UnitSelectionWidget);
+	UnitSelection->AddToViewport();
+
 	ResourcePanel = CreateWidget<UResourcePanelWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), ResourcePanelWidget);
 	ResourcePanel->AddToViewport();
+	
 	TownCenterPanel = CreateWidget<UBuildingsPanelWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), TownCenterPanelWidget);
 	TownCenterPanel->SetVisibility(ESlateVisibility::Collapsed);
 	TownCenterPanel->AddToViewport();
@@ -80,6 +87,16 @@ void ARTSHUD::UnitAdded(const FVector2d& Location, const FColor& Color)
 void ARTSHUD::AddAlertAnimation(uint32 Id, const FVector2d& Location)
 {
 	MiniMap->AddAlertAnimation(Id, Location);
+}
+
+void ARTSHUD::UpdateSelectionBox(const FVector2d& CursorLocation)
+{
+	UnitSelection->UpdateSelectionBox(CursorLocation);
+}
+
+void ARTSHUD::EndSelection()
+{
+	UnitSelection->EndSelection();
 }
 
 void ARTSHUD::ShowVillagerPanel(AVillager* Villager)
