@@ -21,20 +21,25 @@ public:
 	TOptional<uint32> FindNearestInRadius(
 		const FVector2d& QueryPoint,
 		float Radius,
-		TFunctionRef<float(uint32)> DistanceSqFunc,
-		TFunctionRef<bool(uint32)> IgnoreFunc = [](uint32) {return false;}) const;
+		TFunctionRef<float(const uint32&)> DistanceSqFunc,
+		TFunctionRef<bool(const uint32&)> IgnoreFunc = [](const uint32&) {return false;}) const;
 	bool IsAnyInRadius(
 		const FVector2d& QueryPoint,
 		float Radius,
-		TFunctionRef<float(uint32)> DistanceSqFunc,
-		TFunctionRef<bool(uint32)> IgnoreFunc = [](uint32) {return false;}) const;
+		TFunctionRef<float(const uint32&)> DistanceSqFunc,
+		TFunctionRef<bool(const uint32&)> IgnoreFunc = [](const uint32&) {return false;}) const;
 	TSet<uint32> FindAllInRadius(
 		const FVector2d& QueryPoint,
 		float Radius,
 		TFunctionRef<float(const uint32&)> DistanceSqFunc,
-		TFunctionRef<bool(const uint32&)> IgnoreFunc = [](uint32) {return false;}) const;
-	TOptional<uint32> GetPointInGrid(const FVector2d& GridLocation, TFunctionRef<bool(uint32)> FilterFunction);
-	TOptional<uint32> GetPointInGrid(uint32 GridId, TFunctionRef<bool(uint32)> FilterFunction);
+		TFunctionRef<bool(const uint32&)> IgnoreFunc = [](const uint32&) {return false;}) const;
+	TSet<uint32> FindAllInRectangle(
+		const FVector2d& MaxPoint,
+		const FVector2d& MinPoint,
+		TFunctionRef<bool(const uint32&)> IsInsideFunc,
+		TFunctionRef<bool(const uint32&)> IgnoreFunc = [](const uint32&) {return false;}) const;
+	TOptional<uint32> GetPointInGrid(const FVector2d& GridLocation, TFunctionRef<bool(const uint32&)> FilterFunction);
+	TOptional<uint32> GetPointInGrid(uint32 GridId, TFunctionRef<bool(const uint32&)> FilterFunction);
 	TSet<uint32> GetAllAdjacentNeighboursIds(const FVector2d& GridLocation);
 	TSet<uint32> GetAllNeighboursIds(const FVector2d& GridLocation);
 	uint32 ToGrid(const FVector2d& GridLocation) const;

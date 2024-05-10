@@ -45,6 +45,8 @@ public:
 	void AddUnitToHash(ABaseUnit& Unit, const FVector2d& UnitSize, bool BIsHologram = false);
 	TSet<uint32> GetNeighboursMoveable(const FVector2d& Location, uint32 TargetId, int Radius);
 	const TMap<int32, ABaseUnit*>& GetUnits();
+	TSet<ABaseUnit*> GetMoveableInsideRectangle(const FVector2d& MaxPoint, const FVector2d& MinPoint);
+
 protected:
 	TMap<int32, ABaseUnit*> Units;
 	TMap<int32, ABaseResources*> Resources;

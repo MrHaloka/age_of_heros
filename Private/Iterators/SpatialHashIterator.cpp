@@ -10,6 +10,16 @@ RowCounter(0),
 ColumnCounter(0)
 {
 }
+FSpatialHashIterator::FSpatialHashIterator(const FGridIndexer2d& Indexer, const FVector2d& MinPoint, const FVector2d& MaxPoint):
+Indexer(Indexer),
+MinIndexID(Indexer.ToGrid(MinPoint)),
+MaxColumnDistance(Indexer.ToGrid(FVector2d(MaxPoint.X, 0)) - Indexer.ToGrid(FVector2d(MinPoint.X,0))),
+MaxRowDistance(Indexer.ToGrid(FVector2d(0, MaxPoint.Y)) - Indexer.ToGrid(FVector2d(0,MinPoint.Y))),
+RowCounter(0),
+ColumnCounter(0)
+{
+	
+}
 
 TOptional<uint32> FSpatialHashIterator::Iterate()
 {

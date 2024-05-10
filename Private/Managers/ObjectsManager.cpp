@@ -330,3 +330,32 @@ const TMap<int32, ABaseUnit*>& FObjectsManager::GetUnits()
 {
 	return Units;
 }
+
+/**
+ * Retrieves the set of movable units that are inside the specified rectangle.
+ *
+ * @param MaxPoint the maximum x and y coordinates of the rectangle.
+ * @param MinPoint the minimum x and y coordinates of the rectangle.
+ * @return the set of movable units inside the specified rectangle.
+ */
+TSet<ABaseUnit*> FObjectsManager::GetMoveableInsideRectangle(const FVector2d& MaxPoint, const FVector2d& MinPoint)
+{
+	TSet<uint32> MoveableIds = HashGrid->FindAllInRectangle(
+		MaxPoint,
+		MinPoint,
+		[this, &MaxPoint, &MinPoint](const uint32& ID)-> bool
+	   {
+		   return Units.FindChecked(ID)->GetActorLocation2d().ComponentwiseAllGreaterOrEqual(MinPoint) &&
+			Units.FindChecked(ID)->GetActorLocation2d().ComponentwiseAllLessOrEqual(MaxPoint);
+	   },
+	   [this](const uint32& ID)-> bool
+	   {
+		   return  !Units.Contains(ID) || !Units.FindChecked(ID)->IsA(AMoveableUnit::StaticClass());
+	   });
+	TSet<ABaseUnit*> Result;
+	for (const uint32& UnitId : MoveableIds)
+	{
+		Result.Add(Units.FindChecked(UnitId));
+	}
+	return Result;
+}

@@ -6,6 +6,7 @@ class AOE2_API FSpatialHashIterator
 {
 public:
 	FSpatialHashIterator(const FGridIndexer2d& Indexer, const FVector2d& QueryPoint, float Radius);
+	FSpatialHashIterator(const FGridIndexer2d& Indexer, const FVector2d& MinPoint, const FVector2d& MaxPoint);
 	TOptional<uint32> Iterate();
 	bool IsFinish() const;
 

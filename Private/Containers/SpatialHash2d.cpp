@@ -146,8 +146,8 @@ void FSpatialHash2d::UpdatePointUnsafe(const uint32 PointID, const FVector2d& Ol
 TOptional<uint32> FSpatialHash2d::FindNearestInRadius(
 	const FVector2d& QueryPoint,
 	float Radius,
-	TFunctionRef<float(uint32)> DistanceSqFunc,
-	TFunctionRef<bool(uint32)> IgnoreFunc) const
+	TFunctionRef<float(const uint32&)> DistanceSqFunc,
+	TFunctionRef<bool(const uint32&)> IgnoreFunc) const
 {
 	
 	float MinDistSquare = TNumericLimits<float>::Max();
@@ -192,8 +192,8 @@ TOptional<uint32> FSpatialHash2d::FindNearestInRadius(
 bool FSpatialHash2d::IsAnyInRadius(
 	const FVector2d& QueryPoint,
 	float Radius,
-	TFunctionRef<float(uint32)> DistanceSqFunc,
-	TFunctionRef<bool(uint32)> IgnoreFunc) const
+	TFunctionRef<float(const uint32&)> DistanceSqFunc,
+	TFunctionRef<bool(const uint32&)> IgnoreFunc) const
 {
 	float MinDistSquare = TNumericLimits<float>::Max();
 	TOptional<uint32> NearestID = NullOpt;
@@ -267,6 +267,39 @@ TSet<uint32> FSpatialHash2d::FindAllInRadius(
 	return Results;
 }
 
+TSet<uint32> FSpatialHash2d::FindAllInRectangle(
+	const FVector2d& MaxPoint,
+	const FVector2d& MinPoint,
+	TFunctionRef<bool(const uint32&)> IsInsideFunc,
+	TFunctionRef<bool(const uint32&)> IgnoreFunc) const
+{
+	TSet<uint32> Results;
+	TArray<uint32> Values;
+	FSpatialHashIterator SpatialHashIterator(Indexer, MinPoint, MaxPoint);
+	while (!SpatialHashIterator.IsFinish())
+	{
+		TOptional<uint32> IndexId = SpatialHashIterator.Iterate();
+		if (!IndexId.IsSet())
+		{
+			continue;
+		}
+		Values.Reset();
+		Hash.MultiFind(IndexId.GetValue(), Values);
+		for (uint32 Value : Values)
+		{
+			if (IgnoreFunc(Value))
+			{
+				continue;
+			}
+			if (IsInsideFunc(Value))
+			{
+				Results.Add(Value);
+			}
+		}
+	}
+	return Results;
+}
+
 /**
  * Find if there's any point within a grid, without locking / thread-safety.
  * It get the gridId from indexer and call @link GetPointInGrid(uint32, TFunctionRef<bool(uint32)>)
@@ -274,7 +307,7 @@ TSet<uint32> FSpatialHash2d::FindAllInRadius(
  * @param FilterFunction Function you provide which filter and check if there's any point inside
  * @return the first point or NullOpt if not found any
  */
-TOptional<uint32> FSpatialHash2d::GetPointInGrid(const FVector2d& GridLocation, TFunctionRef<bool(uint32)> FilterFunction)
+TOptional<uint32> FSpatialHash2d::GetPointInGrid(const FVector2d& GridLocation, TFunctionRef<bool(const uint32&)> FilterFunction)
 {
 	uint32 GridId = Indexer.ToGrid(GridLocation);
 	return GetPointInGrid(GridId, FilterFunction);
@@ -286,7 +319,7 @@ TOptional<uint32> FSpatialHash2d::GetPointInGrid(const FVector2d& GridLocation, 
  * @param FilterFunction Function you provide which filter and check if there's any point inside
  * @return the first point or NullOpt if not found any
  */
-TOptional<uint32> FSpatialHash2d::GetPointInGrid(uint32 GridId, TFunctionRef<bool(uint32)> FilterFunction)
+TOptional<uint32> FSpatialHash2d::GetPointInGrid(uint32 GridId, TFunctionRef<bool(const uint32&)> FilterFunction)
 {
 	TArray<uint32> Values;
 	Hash.MultiFind(GridId, Values);
