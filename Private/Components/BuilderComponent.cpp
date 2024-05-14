@@ -1,6 +1,7 @@
 #include "Components/BuilderComponent.h"
 #include "Actors/Units/BuildingConstruction.h"
 #include "Actors/Units/MoveableUnit.h"
+#include "Actors/Units/Villager.h"
 #include "GamePlay/GameStatics.h"
 
 UBuilderComponent::UBuilderComponent()
@@ -8,20 +9,33 @@ UBuilderComponent::UBuilderComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UBuilderComponent::OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState)
+{
+	if (OldState == Building)
+	{
+		StopBuilding();
+	}
+	if (OldState == Moving_To_Building && NewState != Building)
+	{
+		StopGoingTo();
+	}
+}
+
 void UBuilderComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	check(GetOwner()->IsA(AMoveableUnit::StaticClass()))
+	check(GetOwner()->IsA(AVillager::StaticClass()))
+	StaticCast<ABaseUnit*>(GetOwner())->GetPrepareUnitStateEventHandler().AddUFunction(this, "OwnerPrepareToStateChangeListener");
 }
 
 void UBuilderComponent::Initialize(ABuildingConstruction* ConstructionBase)
 {
-	TOptional<FVector2d> BuilderLocation = ConstructionBase->GetClosestEmptyBuilderLocation(StaticCast<AMoveableUnit*>(GetOwner())->GetActorLocation2d());
+	TOptional<FVector2d> BuilderLocation = ConstructionBase->GetClosestEmptyBuilderLocation(StaticCast<AVillager*>(GetOwner())->GetActorLocation2d());
 	if (BuilderLocation.IsSet())
 	{
+		StaticCast<AVillager*>(GetOwner())->MoveTo(BuilderLocation.GetValue(), Moving_To_Building);
 		SlotLocation = BuilderLocation.GetValue();
 		BuildingTarget = &*ConstructionBase;
-		StaticCast<AMoveableUnit*>(GetOwner())->MoveTo(BuilderLocation.GetValue(), Moving_To_Building);
 	}
 	else
 	{
@@ -35,6 +49,14 @@ void UBuilderComponent::StopBuilding()
 	if (BuildingTarget!= nullptr && IsValid(BuildingTarget))
 	{
 		BuildingTarget->RemoveVillagerFromBuilding(this, SlotLocation);
+	}
+}
+
+void UBuilderComponent::StopGoingTo()
+{
+	if (BuildingTarget!= nullptr && IsValid(BuildingTarget))
+	{
+		BuildingTarget->ReturnSlotLocation(SlotLocation);
 	}
 }
 
@@ -55,7 +77,7 @@ void UBuilderComponent::StartBuilding()
 
 void UBuilderComponent::OnBuildingCompleted()
 {
-	StaticCast<AMoveableUnit*>(GetOwner())->SetUnitState(Idle);
+	StaticCast<AVillager*>(GetOwner())->SetUnitState(Idle);
 	UE_LOG(LogTemp, Warning, TEXT("villager is idle now"));
 }
 

@@ -12,7 +12,8 @@ class AOE2_API UBuilderComponent : public UActorComponent
 
 public:	
 	UBuilderComponent();
-
+	UFUNCTION()
+	void OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState);
 protected:
 	virtual void BeginPlay() override;
 	FVector2d SlotLocation;
@@ -23,4 +24,5 @@ public:
 	void StopBuilding();
 	void StartBuilding();
 	void OnBuildingCompleted();
+	void StopGoingTo();
 };

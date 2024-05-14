@@ -22,7 +22,8 @@ public:
 	void Initialize(ABaseResources* Resources);
 	void StopHarvesting();
 	void GoBackToResource();
-	
+	UFUNCTION()
+	void OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState);
 protected:
 	virtual void BeginPlay() override;
 	FHarvestingManager* HarvestingManager;

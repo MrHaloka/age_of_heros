@@ -14,11 +14,16 @@ UResourceHarvestingComponent::UResourceHarvestingComponent()
 
 void UResourceHarvestingComponent::Initialize(ABaseResources* Resource)
 {
+	if (Resource == nullptr)
+	{
+		StaticCast<AVillager*>(GetOwner())->SetUnitState(Idle);
+		return;
+	}
+	SlotLocation = HarvestingManager->GetResourceLocation(StaticCast<AVillager*>(GetOwner())->GetActorLocation2d(), Resource);
 	ResourceId = Resource->GetID();
 	ResourceInfo = Resource->GetResourceInfo();
-	SlotLocation = HarvestingManager->GetResourceLocation(StaticCast<AVillager*>(GetOwner())->GetActorLocation2d(), Resource);
-	StaticCast<AVillager*>(GetOwner())->MoveTo(SlotLocation);
-	StaticCast<AVillager*>(GetOwner())->SetUnitState(Moving_To_Resources);
+	StaticCast<AVillager*>(GetOwner())->MoveTo(SlotLocation, Moving_To_Resources);
+	DrawDebugBox(GetWorld(), FVector(SlotLocation, 0), FVector(25), FColor::Green, false, 1.5, 0, 10);
 	TargetResource = Resource;
 }
 
@@ -33,6 +38,18 @@ void UResourceHarvestingComponent::GoBackToResource()
 	Initialize(IsValid(TargetResource)? TargetResource : GetNewResourceTarget());
 }
 
+void UResourceHarvestingComponent::OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState)
+{
+	if (OldState == Harvesting)
+	{
+		StopHarvesting();
+	}
+	else if (OldState == Moving_To_Resources && NewState != Harvesting)
+	{
+		StopHarvesting();
+	}
+}
+
 void UResourceHarvestingComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -42,6 +59,7 @@ void UResourceHarvestingComponent::BeginPlay()
 	}
 	SetComponentTickEnabled(false);
 	check(GetOwner()->IsA(AVillager::StaticClass()))
+	StaticCast<ABaseUnit*>(GetOwner())->GetPrepareUnitStateEventHandler().AddUFunction(this, "OwnerPrepareToStateChangeListener");
 }
 
 void UResourceHarvestingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -55,6 +73,7 @@ void UResourceHarvestingComponent::TickComponent(float DeltaTime, ELevelTick Tic
 	}
 	if (!IsValid(TargetResource))
 	{
+		SetComponentTickEnabled(false);
 		Initialize(GetNewResourceTarget());
 		return;
 	}
