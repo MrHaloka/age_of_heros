@@ -3,10 +3,10 @@
 
 class ABaseResources;
 
-class AOE2_API VillagerHarvestCommand : public FBaseUnitCommand
+class AOE2_API HarvestCommand : public FBaseUnitCommand
 {
 public:
-	explicit VillagerHarvestCommand(TSet<ABaseUnit*> Units, ABaseResources* TargetResource);
+	explicit HarvestCommand(TSet<ABaseUnit*> Units, ABaseResources* TargetResource);
 	virtual void RunCommand() override;
 protected:
 	ABaseResources* TargetResource;
