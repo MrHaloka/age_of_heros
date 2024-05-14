@@ -33,8 +33,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	USkeletalMeshComponent* SkeletalMeshComponent;
 	void ReachedDropoff();
-	void ReachedTargetActor();
-	virtual void FinalPathfindingGoalReached() override;
+	virtual void OnFinalPathfindingGoalReached() override;
 	UPROPERTY()
 	UDropoffComponent* DropOffPoint;
 	FInventory Inventory = FInventory(2);

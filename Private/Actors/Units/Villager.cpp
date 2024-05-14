@@ -70,30 +70,12 @@ void AVillager::ReachedDropoff()
 	GetComponentByClass<UResourceHarvestingComponent>()->GoBackToResource();
 }
 
-void AVillager::ReachedTargetActor()
+void AVillager::OnFinalPathfindingGoalReached()
 {
-	if (UnitState == Moving_To_Resources)
-	{
-		GetComponentByClass<UResourceHarvestingComponent>()->SetComponentTickEnabled(true);
-		SetUnitState(Harvesting);
-	}
-	if (UnitState == Moving_To_Building)
-	{
-		GetComponentByClass<UBuilderComponent>()->StartBuilding();
-		SetUnitState(Building);
-	}
+	Super::OnFinalPathfindingGoalReached();
 	if (UnitState == Moving_To_Dropoff)
 	{
 		ReachedDropoff();
-	}
-}
-
-void AVillager::FinalPathfindingGoalReached()
-{
-	Super::FinalPathfindingGoalReached();
-	if (UnitState != Moving)
-	{
-		ReachedTargetActor();
 	}
 }
 
