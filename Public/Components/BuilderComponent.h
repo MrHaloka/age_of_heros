@@ -14,6 +14,8 @@ public:
 	UBuilderComponent();
 	UFUNCTION()
 	void OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState);
+	UFUNCTION()
+	void OnPathfindingGoalReachedListener();
 protected:
 	virtual void BeginPlay() override;
 	FVector2d SlotLocation;

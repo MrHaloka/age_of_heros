@@ -21,11 +21,22 @@ void UBuilderComponent::OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState
 	}
 }
 
+void UBuilderComponent::OnPathfindingGoalReachedListener()
+{
+	if (StaticCast<AMoveableUnit*>(GetOwner())->GetUnitState() == Moving_To_Building)
+	{
+		StartBuilding();
+		StaticCast<AMoveableUnit*>(GetOwner())->SetUnitState(Building);
+	}
+}
+
 void UBuilderComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	check(GetOwner()->IsA(AVillager::StaticClass()))
-	StaticCast<ABaseUnit*>(GetOwner())->GetPrepareUnitStateEventHandler().AddUFunction(this, "OwnerPrepareToStateChangeListener");
+	StaticCast<AMoveableUnit*>(GetOwner())->GetPrepareUnitStateEventHandler().AddUFunction(this, "OwnerPrepareToStateChangeListener");
+	StaticCast<AMoveableUnit*>(GetOwner())->GetFinalPathfindingGoalReachEventHandler().AddUFunction(this, "OnPathfindingGoalReachedListener");
+
 }
 
 void UBuilderComponent::Initialize(ABuildingConstruction* ConstructionBase)

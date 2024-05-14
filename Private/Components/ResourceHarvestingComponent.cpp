@@ -50,6 +50,15 @@ void UResourceHarvestingComponent::OwnerPrepareToStateChangeListener(TEnumAsByte
 	}
 }
 
+void UResourceHarvestingComponent::OnPathfindingGoalReachedListener()
+{
+	if (StaticCast<AMoveableUnit*>(GetOwner())->GetUnitState() == Moving_To_Resources)
+	{
+		SetComponentTickEnabled(true);
+		StaticCast<AMoveableUnit*>(GetOwner())->SetUnitState(Harvesting);
+	}
+}
+
 void UResourceHarvestingComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -59,7 +68,8 @@ void UResourceHarvestingComponent::BeginPlay()
 	}
 	SetComponentTickEnabled(false);
 	check(GetOwner()->IsA(AVillager::StaticClass()))
-	StaticCast<ABaseUnit*>(GetOwner())->GetPrepareUnitStateEventHandler().AddUFunction(this, "OwnerPrepareToStateChangeListener");
+	StaticCast<AMoveableUnit*>(GetOwner())->GetPrepareUnitStateEventHandler().AddUFunction(this, "OwnerPrepareToStateChangeListener");
+	StaticCast<AMoveableUnit*>(GetOwner())->GetFinalPathfindingGoalReachEventHandler().AddUFunction(this, "OnPathfindingGoalReachedListener");
 }
 
 void UResourceHarvestingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

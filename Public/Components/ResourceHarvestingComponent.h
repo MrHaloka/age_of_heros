@@ -24,6 +24,8 @@ public:
 	void GoBackToResource();
 	UFUNCTION()
 	void OwnerPrepareToStateChangeListener(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState);
+	UFUNCTION()
+	void OnPathfindingGoalReachedListener();
 protected:
 	virtual void BeginPlay() override;
 	FHarvestingManager* HarvestingManager;
