@@ -28,6 +28,8 @@ public:
 	bool IsStarted();
 	void Starting();
 	TOptional<FVector2d> GetClosestEmptyBuilderLocation(const FVector2d& BuilderLocation);
+	void ReturnSlotLocation(const FVector2d& SlotLocation);
+
 protected:
 	TSet<UBuilderComponent*> ActiveBuilders;
 	TSet<FVector2d> BuildersGridLocations;

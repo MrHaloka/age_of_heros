@@ -153,6 +153,11 @@ TOptional<FVector2d> ABuildingConstruction::GetClosestEmptyBuilderLocation(const
 	return Location;
 }
 
+void ABuildingConstruction::ReturnSlotLocation(const FVector2d& SlotLocation)
+{
+	BuildersGridLocations.Add(SlotLocation);
+}
+
 void ABuildingConstruction::SpawnTheBuilding()
 {
 	GameStatics::GetObjectManager()->SpawnUnit(
