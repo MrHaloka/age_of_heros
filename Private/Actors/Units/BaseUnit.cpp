@@ -1,5 +1,6 @@
 #include "Actors/Units/BaseUnit.h"
 
+#include "Components/BuilderComponent.h"
 #include "DataStructures/UnitInfo.h"
 #include "Enums/UnitState.h"
 #include "GamePlay/GameStatics.h"
@@ -14,6 +15,7 @@ ABaseUnit::ABaseUnit()
 	PrimaryActorTick.bCanEverTick = false;
 	bAsyncPhysicsTickEnabled = false;
 	UnitState = Idle;
+	OnPrepareUnitStateChangeEvent.AddUFunction(this, "OnPrepareUnitStateChanged");
 }
 
 void ABaseUnit::BeginPlay()
@@ -22,8 +24,13 @@ void ABaseUnit::BeginPlay()
 	HP = GetMaxHP();
 }
 
-void ABaseUnit::OnPrepareUnitStateChange(TEnumAsByte<EUnitState> NewState)
+void ABaseUnit::OnPrepareUnitStateChanged(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState)
 {
+}
+
+ABaseUnit::FOnPrepareUnitStateChangeEvent& ABaseUnit::GetPrepareUnitStateEventHandler()
+{
+	return OnPrepareUnitStateChangeEvent;
 }
 
 FVector2d ABaseUnit::GetSize()
@@ -119,6 +126,6 @@ EUnitState ABaseUnit::GetUnitState() const
 
 void ABaseUnit::SetUnitState(TEnumAsByte<EUnitState> NewUnitState)
 {
-	OnPrepareUnitStateChange(NewUnitState);
+	OnPrepareUnitStateChangeEvent.Broadcast(NewUnitState, UnitState);
 	UnitState = NewUnitState;
 }

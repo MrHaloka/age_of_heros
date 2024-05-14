@@ -24,7 +24,6 @@ protected:
 	TEnumAsByte<EUnitState> UnitState;
 	uint32 ID;
 	ETeams Team;
-	virtual void OnPrepareUnitStateChange(TEnumAsByte<EUnitState> NewState);
 public:
 	virtual void Tick(float DeltaTime) override;
 	EUnitState GetUnitState() const;
@@ -44,4 +43,11 @@ public:
 	int32 GetClassID();
 	void SetTeam(ETeams NewTeam);
 	ETeams GetTeam();
+protected:
+	DECLARE_EVENT_TwoParams(ABaseUnit, FOnPrepareUnitStateChangeEvent, TEnumAsByte<EUnitState>, TEnumAsByte<EUnitState>);
+	FOnPrepareUnitStateChangeEvent OnPrepareUnitStateChangeEvent;
+	UFUNCTION()
+	virtual void OnPrepareUnitStateChanged(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState);
+public:
+	FOnPrepareUnitStateChangeEvent& GetPrepareUnitStateEventHandler();
 };
