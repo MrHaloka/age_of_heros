@@ -1,7 +1,7 @@
 ﻿#include "ChainHandlers/CursorInputHandler/ConstructionSiteHandler.h"
 
 #include "ChainHandlers/CursorInputHandler/BuildingHandler.h"
-#include "Commands/VillagerConstructCommand.h"
+#include "Commands/ConstructCommand.h"
 #include "Actors/Units/Buildings/BaseBuilding.h"
 #include "Actors/Units/BuildingConstruction.h"
 
@@ -17,6 +17,6 @@ void FConstructionSiteHandler::Execute(ABaseUnit* TargetBuilding)
 		NextHandler->Execute(reinterpret_cast<ABaseBuilding*>(TargetBuilding));
 		return;
 	}
-	FVillagerConstructCommand VillagerConstructCommand(Units, reinterpret_cast<ABuildingConstruction*>(TargetBuilding));
-	VillagerConstructCommand.RunCommand();
+	ConstructCommand ConstructCommand(Units, reinterpret_cast<ABuildingConstruction*>(TargetBuilding));
+	ConstructCommand.RunCommand();
 }

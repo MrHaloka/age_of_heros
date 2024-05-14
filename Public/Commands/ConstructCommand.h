@@ -4,10 +4,10 @@
 class ABuildingConstruction;
 class ABaseBuilding;
 
-class AOE2_API FVillagerConstructCommand: public FBaseUnitCommand
+class AOE2_API ConstructCommand: public FBaseUnitCommand
 {
 public:
-	explicit FVillagerConstructCommand(TSet<ABaseUnit*> Units, ABuildingConstruction* TargetBuilding);
+	explicit ConstructCommand(TSet<ABaseUnit*> Units, ABuildingConstruction* TargetBuilding);
 	virtual void RunCommand() override;
 protected:
 	ABuildingConstruction* TargetBuilding;
