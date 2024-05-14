@@ -11,6 +11,7 @@ AMoveableUnit::AMoveableUnit() : ABaseUnit()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	CreateDefaultSubobject<USteeringComponent>(TEXT("Steering Component"));
+	OnPathfindingGoalReachEvent.AddUFunction(this, "OnFinalPathfindingGoalReached");
 }
 
 void AMoveableUnit::SetIsMoving(bool BMoving)
@@ -121,14 +122,13 @@ void AMoveableUnit::GoalReached()
 	SetIsMoving(false);
 	CurrentVelocity = FVector2d::Zero();
 	GoalVelocity = FVector2d::Zero();
-	FinalPathfindingGoalReached();
+	OnPathfindingGoalReachEvent.Broadcast();
 }
 
 FVector2d AMoveableUnit::CalculateNewLocation(const float& DeltaSeconds)
 {
 	const FVector2d Movement = CurrentVelocity * DeltaSeconds;
 	FVector2d NewLocation = GetActorLocation2d() + Movement;
-	UE_LOG(LogTemp, Warning, TEXT("Movement is %s"), *Movement.ToString())
 	if (FVector2d::DistSquared(GetActorLocation2d(), Goal) <= Movement.SquaredLength())
 	{
 		NewLocation = Goal;
@@ -158,9 +158,14 @@ void AMoveableUnit::MoveTowardGoal(const float& DeltaSeconds)
 	}
 }
 
-void AMoveableUnit::FinalPathfindingGoalReached()
+void AMoveableUnit::OnFinalPathfindingGoalReached()
 {
 	bIsOnPath = false;
+}
+
+AMoveableUnit::FOnPathfindingGoalReachEvent& AMoveableUnit::GetFinalPathfindingGoalReachEventHandler()
+{
+	return OnPathfindingGoalReachEvent;
 }
 
 void AMoveableUnit::BeginPlay()

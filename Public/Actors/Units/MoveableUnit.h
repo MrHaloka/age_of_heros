@@ -34,7 +34,6 @@ protected:
 	void GoalReached();
 	FVector2d CalculateNewLocation(const float& DeltaSeconds);
 	void MoveTowardGoal(const float& DeltaSeconds);
-	virtual void FinalPathfindingGoalReached();
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
 	AActor* CheckIfNewLocationBlocked(const FVector2d& NewLocation) const;
@@ -46,4 +45,11 @@ protected:
 	FVector2d GoalVelocity = FVector2d::Zero();
 	FVector2d CurrentVelocity = FVector2d::Zero();
 	FVector2d Goal;
+protected:
+	DECLARE_EVENT(AMoveableUnit, FOnPathfindingGoalReachEvent);
+	FOnPathfindingGoalReachEvent OnPathfindingGoalReachEvent;
+	UFUNCTION()
+	virtual void OnFinalPathfindingGoalReached();
+public:
+	FOnPathfindingGoalReachEvent& GetFinalPathfindingGoalReachEventHandler();
 };
