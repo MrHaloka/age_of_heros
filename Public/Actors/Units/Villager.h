@@ -35,8 +35,6 @@ protected:
 	void ReachedDropoff();
 	void ReachedTargetActor();
 	virtual void FinalPathfindingGoalReached() override;
-	void EndActivityAndMove();
-	virtual void OnPrepareUnitStateChange(TEnumAsByte<EUnitState> NewState) override;
 	UPROPERTY()
 	UDropoffComponent* DropOffPoint;
 	FInventory Inventory = FInventory(2);

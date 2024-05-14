@@ -37,27 +37,6 @@ void AVillager::GatherResource(ABaseResources* Resource)
 	GetComponentByClass<UResourceHarvestingComponent>()->Initialize(Resource);
 }
 
-void AVillager::EndActivityAndMove()
-{
-	if (UnitState == Harvesting || UnitState == Moving_To_Resources)
-	{
-		GetComponentByClass<UResourceHarvestingComponent>()->StopHarvesting();
-	}
-	if (UnitState == Building || UnitState == Moving_To_Building)
-	{
-		GetComponentByClass<UBuilderComponent>()->StopBuilding();
-	}
-}
-
-void AVillager::OnPrepareUnitStateChange(TEnumAsByte<EUnitState> NewState)
-{
-	Super::OnPrepareUnitStateChange(NewState);
-	if (NewState == Moving)
-	{
-		EndActivityAndMove();
-	}
-}
-
 void AVillager::GoToConstructionSite(ABuildingConstruction* ConstructionBase)
 {
 	GetComponentByClass<UBuilderComponent>()->Initialize(ConstructionBase);
