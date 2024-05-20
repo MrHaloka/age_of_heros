@@ -42,7 +42,6 @@ void UPlayerInputManager::Initialize(APlayerSpectatorPawn* InitPlayer, UInputCom
 	}
 	
 	ScrollComponent = NewObject<UScreenScrollComponent>(Player, UScreenScrollComponent::StaticClass(), TEXT("Screen Scroll"));
-	ScrollComponent->SetSensitivity(5, 5);
 	ScrollComponent->RegisterComponent();
 	Player->AddInstanceComponent(ScrollComponent);
 

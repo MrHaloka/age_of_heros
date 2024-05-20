@@ -15,11 +15,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
 	void Scroll();
-	uint8 XSensitivityPercent;
-	uint8 YSensitivityPercent;
-	UPROPERTY()
-	APlayerSpectatorPawn* OwnerPawn;
+	float MovementSpeed;
+	const FMatrix2x2 RotationMatrix  = FMatrix2x2(0.866f, 0.5f, -0.5f, 0.866f);
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	void SetSensitivity(uint8 NewXSensitivityPercent, uint8 NewYSensitivityPercent);
 };

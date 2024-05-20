@@ -11,37 +11,25 @@ UScreenScrollComponent::UScreenScrollComponent()
 void UScreenScrollComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	OwnerPawn = CastChecked<APlayerSpectatorPawn>(GetOwner());
+	check(GetOwner()->IsA(APlayerSpectatorPawn::StaticClass()))
+	MovementSpeed = StaticCast<APlayerSpectatorPawn*>(GetOwner())->GetMovementComponent()->GetMaxSpeed();
 }
 
 void UScreenScrollComponent::BeginDestroy()
 {
-	UE_LOG(LogTemp, Warning, TEXT("component got destroy"));
 	Super::BeginDestroy();
 }
 
 void UScreenScrollComponent::Scroll()
 {
-	FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(OwnerPawn->GetWorld());
-	FVector2D ViewSize = UWidgetLayoutLibrary::GetViewportSize(OwnerPawn->GetWorld());
-	MousePosition *= UWidgetLayoutLibrary::GetViewportScale(OwnerPawn->GetWorld());
-	MousePosition.X /= ViewSize.X;
-	MousePosition.Y /= ViewSize.Y;
-	if (MousePosition.X > 0.95)
+	FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport(GetOwner()->GetWorld());
+	MousePosition *= UWidgetLayoutLibrary::GetViewportScale(GetOwner()->GetWorld());
+	MousePosition /= UWidgetLayoutLibrary::GetViewportSize(GetOwner()->GetWorld());
+	if (MousePosition.X > 0.95 || MousePosition.X < 0.05 || MousePosition.Y > 0.95 || MousePosition.Y < 0.05)
 	{
-		OwnerPawn->MoveRight(OwnerPawn->GetMovementComponent()->GetMaxSpeed());
-	}
-	else if (MousePosition.X < 0.05)
-	{
-		OwnerPawn->MoveRight(-OwnerPawn->GetMovementComponent()->GetMaxSpeed());
-	}
-	if (MousePosition.Y > 0.95)
-	{
-		OwnerPawn->MoveForward(-OwnerPawn->GetMovementComponent()->GetMaxSpeed());
-	}
-	else if (MousePosition.Y < 0.05)
-	{
-		OwnerPawn->MoveForward(OwnerPawn->GetMovementComponent()->GetMaxSpeed());
+		const FVector2d Direction(0.5 - MousePosition.Y  ,MousePosition.X - 0.5 );
+		const FVector Movement(RotationMatrix.TransformVector(Direction.GetSafeNormal() * MovementSpeed), 0);
+		StaticCast<APlayerSpectatorPawn*>(GetOwner())->AddMovementInput(Movement);
 	}
 }
 
@@ -51,10 +39,3 @@ void UScreenScrollComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	Scroll();
 }
-
-void UScreenScrollComponent::SetSensitivity(uint8 NewXSensitivityPercent, uint8 NewYSensitivityPercent)
-{
-	XSensitivityPercent = NewXSensitivityPercent;
-	YSensitivityPercent = NewYSensitivityPercent;
-}
-
