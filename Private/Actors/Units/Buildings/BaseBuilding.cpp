@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Managers/ObjectsManager.h"
 
-ABaseBuilding::ABaseBuilding()
+ABaseBuilding::ABaseBuilding() : ABaseUnit()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	StaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Building Mesh"));
