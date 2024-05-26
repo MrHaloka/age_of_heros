@@ -11,7 +11,9 @@ UCLASS()
 class AOE2_API AMoveableUnit : public ABaseUnit
 {
 	GENERATED_BODY()
-
+protected:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	USkeletalMeshComponent* SkeletalMeshComponent;
 public:
 	AMoveableUnit();
 	void SetIsMoving(bool BMoving);
@@ -30,6 +32,7 @@ public:
 	virtual FVector GetVelocity() const override;
 	void SetActorLocation2d(const FVector2d& NewLocation);
 	virtual int32 GetMovingCollisionRadius() const;
+	USkeletalMeshComponent& GetSkeletalMeshComponent();
 protected:
 	void GoalReached();
 	FVector2d CalculateNewLocation(const float& DeltaSeconds);

@@ -12,7 +12,8 @@ AMoveableUnit::AMoveableUnit() : ABaseUnit()
 	PrimaryActorTick.bCanEverTick = true;
 	CreateDefaultSubobject<USteeringComponent>(TEXT("Steering Component"));
 	OnPathfindingGoalReachEvent.AddUFunction(this, "OnFinalPathfindingGoalReached");
-}
+	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal"));
+	SetRootComponent(SkeletalMeshComponent);
 
 void AMoveableUnit::SetIsMoving(bool BMoving)
 {
@@ -194,4 +195,9 @@ int32 AMoveableUnit::GetMovingCollisionRadius() const
 		return Super::GetCollisionRadius();
 	}
 	return 1;
+}
+
+USkeletalMeshComponent& AMoveableUnit::GetSkeletalMeshComponent()
+{
+	return *SkeletalMeshComponent;
 }
