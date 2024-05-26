@@ -128,4 +128,5 @@ void ABaseUnit::SetUnitState(TEnumAsByte<EUnitState> NewUnitState)
 {
 	OnPrepareUnitStateChangeEvent.Broadcast(NewUnitState, UnitState);
 	UnitState = NewUnitState;
+	UnitStateChanged(NewUnitState.GetValue());
 }

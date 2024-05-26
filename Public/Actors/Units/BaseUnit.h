@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Enums/UnitState.h"
 #include "BaseUnit.generated.h"
 class ARTSHUD;
 enum class ETeams;
@@ -48,6 +49,8 @@ protected:
 	FOnPrepareUnitStateChangeEvent OnPrepareUnitStateChangeEvent;
 	UFUNCTION()
 	virtual void OnPrepareUnitStateChanged(TEnumAsByte<EUnitState> NewState, TEnumAsByte<EUnitState> OldState);
+	UFUNCTION(BlueprintImplementableEvent, meta=(DisplayName = "StateChanged"))
+	void UnitStateChanged(EUnitState NewState);
 public:
 	FOnPrepareUnitStateChangeEvent& GetPrepareUnitStateEventHandler();
 };
