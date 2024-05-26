@@ -162,6 +162,10 @@ void AMoveableUnit::MoveTowardGoal(const float& DeltaSeconds)
 void AMoveableUnit::OnFinalPathfindingGoalReached()
 {
 	bIsOnPath = false;
+	if (GetUnitState() == Moving)
+	{
+		SetUnitState(Idle);
+	}
 }
 
 AMoveableUnit::FOnPathfindingGoalReachEvent& AMoveableUnit::GetFinalPathfindingGoalReachEventHandler()
