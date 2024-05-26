@@ -13,4 +13,6 @@ class AOE2_API AHouse : public ABaseBuilding
 	GENERATED_BODY()
 	virtual void BeginPlay() override;
 	virtual void BeginDestroy() override;
+public:
+	AHouse();
 };

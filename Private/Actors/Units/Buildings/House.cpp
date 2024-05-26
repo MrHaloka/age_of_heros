@@ -17,3 +17,7 @@ void AHouse::BeginDestroy()
 	// PlayerSpectatorPawn->GetComponentByClass<UPlayerResourceManagerComponent>()->RemoveResources(FResources(EResource::Population, 5));
 	Super::BeginDestroy();
 }
+
+AHouse::AHouse() : ABaseBuilding()
+{
+}

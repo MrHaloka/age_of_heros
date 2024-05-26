@@ -1,8 +1,7 @@
 #include "Actors/Units/Buildings/TownCenter.h"
-#include "Kismet/GameplayStatics.h"
 #include "UI/RTSHUD.h"
 
-ATownCenter::ATownCenter()
+ATownCenter::ATownCenter() : ABaseBuilding()
 {
 }
 

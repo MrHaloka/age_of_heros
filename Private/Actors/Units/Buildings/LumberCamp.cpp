@@ -1,7 +1,7 @@
 #include "Actors/Units/Buildings/LumberCamp.h"
 #include "Components/DropoffComponent.h"
 
-ALumberCamp::ALumberCamp()
+ALumberCamp::ALumberCamp() : ABaseBuilding()
 {
 }
 
