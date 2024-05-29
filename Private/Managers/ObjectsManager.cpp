@@ -12,11 +12,12 @@
 #include "Actors/Units/Buildings/BaseBuilding.h"
 #include "Actors/Resources/BaseResources.h"
 #include "GamePlay/GameStatics.h"
-#include "GamePlay/PlayerSpectatorPawn.h"
+#include "Managers/PerceptionManager.h"
 
 FObjectsManager::FObjectsManager(UWorld* NewWorld, uint8 GridSize, uint16 CellSize) : World(NewWorld)
 {
 	HashGrid = MakeUnique<FSpatialHash2d>(GridSize, CellSize);
+	PerceptionManager = MakeUnique<FPerceptionManager>(this, GridSize, CellSize);
 }
 
 FObjectsManager::~FObjectsManager()
@@ -38,7 +39,6 @@ ABaseUnit* FObjectsManager::SpawnUnit(const FVector& Location, const FUnitInfoFa
 	ABaseUnit* NewUnit = World->SpawnActor<ABaseUnit>(UnitInfo.GetUnitInfo(), Location, FRotator::ZeroRotator);
 	NewUnit->SetTeam(Team);
 	AddUnitToHash(*NewUnit, UnitInfo.GetUnitSize());
-	UE_LOG(LogTemp, Warning, TEXT("Id is %d for Unit %s"), NewUnit->GetID(), *NewUnit->GetFName().ToString())
 	return NewUnit;
 }
 
@@ -52,6 +52,9 @@ void FObjectsManager::AddUnitToHash(ABaseUnit& Unit, const FVector2d& UnitSize, 
 		Holograms.Add(CurrentId);
 	}
 	CurrentId += 1;
+	
+	PerceptionManager->UnitAddedToGridListener(&Unit, true);
+	OnUnitAddedToGridEvent.Broadcast(&Unit);
 }
 
 ABaseResources* FObjectsManager::SpawnResource(const FVector& Location, TSubclassOf<ABaseResources> ResourceClass)
@@ -189,6 +192,31 @@ AActor* FObjectsManager::GetActorInLocation(const FVector2d& Location, int8 Radi
 	return ActorId.IsSet() ? GetActor(ActorId.GetValue()) : nullptr;
 }
 
+AActor* FObjectsManager::GetActorInLocation(const FVector2d& Location, ETeams IgnoreTeam, int8 Radius)
+{
+	int32 MaxRadius = Radius * Radius - 1;
+	TOptional<uint32> ActorId = HashGrid->FindNearestInRadius(
+		Location,
+		Radius,
+		[&Location , &MaxRadius, this](const uint32& ID)-> float
+		{
+			if (Units.FindChecked(ID)->IsA(ABaseBuilding::StaticClass()) || Units.FindChecked(ID)->IsA(ABuildingConstruction::StaticClass()))
+			{
+				return MaxRadius;
+			}
+			return FVector2d::DistSquared(Units.FindChecked(ID)->GetActorLocation2d(), Location);
+		},
+		[this, &IgnoreTeam](const uint32& ID)->bool
+		{
+			if (Resources.Contains(ID) || Holograms.Contains(ID))
+			{
+				return true;
+			}
+			return Units.FindChecked(ID)->GetTeam() == IgnoreTeam;
+		});
+	return ActorId.IsSet() ? GetActor(ActorId.GetValue()) : nullptr;
+}
+
 void FObjectsManager::RemoveUnitUnsafe(uint32 ID, FVector2d Location)
 {
 	if (Units.FindChecked(ID)->GetSize().IsZero())
@@ -282,12 +310,14 @@ bool FObjectsManager::IsBlock(const FVector2d& Location, float Radius, const uin
 	);
 }
 
-void FObjectsManager::UnitMoved(const AMoveableUnit* Unit, const FVector2d& NewLocation)
+void FObjectsManager::UnitMoved(AMoveableUnit* Unit, const FVector2d& NewLocation)
 {
 	if(HashGrid->UpdatePoint(Unit->GetID(), Unit->GetActorLocation2d(), NewLocation))
 	{
 		GameStatics::GetRTSGameMode()->UnitMoved(&*Unit, NewLocation);
+		OnUnitMovedoutGridEvent.Broadcast(Unit, NewLocation);
 	}
+	PerceptionManager->UnitMovedListener(Unit, NewLocation);
 }
 
 AActor* FObjectsManager::GetActorInGrid(const FVector2d& GridLocation)
@@ -358,4 +388,31 @@ TSet<ABaseUnit*> FObjectsManager::GetMoveableInsideRectangle(const FVector2d& Ma
 		Result.Add(Units.FindChecked(UnitId));
 	}
 	return Result;
+}
+
+TUniquePtr<FPerceptionManager>& FObjectsManager::GetPerceptionManager()
+{
+	return PerceptionManager;
+}
+
+TArray<uint32> FObjectsManager::GetActorsInGrid(const FVector2d& GridLocation)
+{
+	return HashGrid->GetPointsInGrid(GridLocation);
+}
+
+TSet<uint32> FObjectsManager::GetUnitsInLocation(const FVector2d& Location, uint32 Radius, uint32 IgnoreId)
+{
+	return HashGrid->FindAllInRadius(
+		Location,
+		Radius,
+		[&Location, this](const uint32& ID)-> float
+		{
+			if (Units.FindChecked(ID)->IsA(ABaseBuilding::StaticClass()) || Units.FindChecked(ID)->IsA(ABuildingConstruction::StaticClass()))
+			{
+				return 0;
+			}
+			return FVector2d::DistSquared(Units.FindChecked(ID)->GetActorLocation2d(), Location);
+		},
+		[&IgnoreId, this](const uint32& ID)-> bool { return ID == IgnoreId || Holograms.Contains(ID) || Resources.Contains(ID); }
+	);
 }
