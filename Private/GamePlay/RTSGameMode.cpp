@@ -19,24 +19,12 @@ ARTSGameMode::ARTSGameMode()
 void ARTSGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
-	ObjectsManager = new FObjectsManager(GetWorld(), GridSize, CellSize);
-	UpgradeManager = new FUpgradeManager();
-	GameStatics::Initialize(*Units, *Buildings, *Upgrades, *ResourcesInfo);
-	MapGenerator = new FMapGenerator(*ObjectsManager);
-	HarvestingManager = new FHarvestingManager(ObjectsManager);
-	DropoffsManager = new FDropoffsManager(ObjectsManager);
-}
-
-void ARTSGameMode::BeginDestroy()
-{
-	Super::BeginDestroy();
-	if (!HasActorBegunPlay())
-	{
-		return;
-	}
-	delete ObjectsManager;
-	delete UpgradeManager;
-	delete MapGenerator;
+	ObjectsManager = MakeUnique<FObjectsManager>(GetWorld(), GridSize, CellSize);
+	UpgradeManager = MakeUnique<FUpgradeManager>();
+	GameStatics::Initialize(*Units, *Buildings, *Upgrades, *ResourcesInfo, *ProjectilesInfo);
+	MapGenerator =  MakeUnique<FMapGenerator>(*ObjectsManager);
+	HarvestingManager = MakeUnique<FHarvestingManager>(ObjectsManager.Get());
+	DropoffsManager = MakeUnique<FDropoffsManager>(ObjectsManager.Get());
 }
 
 void ARTSGameMode::Tick(float DeltaSeconds)
@@ -51,22 +39,22 @@ void ARTSGameMode::PostLogin(APlayerController* NewPlayer)
 
 FObjectsManager* ARTSGameMode::GetObjectManager() const
 {
-	return ObjectsManager;
+	return ObjectsManager.Get();
 }
 
 FUpgradeManager* ARTSGameMode::GetUpgradeManager() const
 {
-	return UpgradeManager;
+	return UpgradeManager.Get();
 }
 
 FDropoffsManager* ARTSGameMode::GetDropoffManager()
 {
-	return DropoffsManager;
+	return DropoffsManager.Get();
 }
 
 FHarvestingManager* ARTSGameMode::GetHarvestingManager()
 {
-	return HarvestingManager;
+	return HarvestingManager.Get();
 }
 
 void ARTSGameMode::LoadDefaultActors(ARTSHUD* PlayerHUD)
