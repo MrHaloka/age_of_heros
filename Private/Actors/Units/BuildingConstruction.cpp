@@ -9,6 +9,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Managers/ObjectsManager.h"
 #include "Components/PlayerResourceManagerComponent.h"
+#include "Managers/PerceptionManager.h"
 
 ABuildingConstruction::ABuildingConstruction()
 {
@@ -123,6 +124,7 @@ void ABuildingConstruction::Starting()
 	HologramMesh->SetVisibility(false, false);
 	UnderConstructionMesh->SetVisibility(true);
 	GameStatics::GetObjectManager()->RemoveHologram(GetID());
+	GameStatics::GetObjectManager()->GetPerceptionManager()->UnitAddedToGridListener(this);
 	if (ARTSHUD* RTSHUD = GetWorld()->GetFirstPlayerController()->GetPawn<APlayerSpectatorPawn>()->GetRTSHUD())
 	{
 		RTSHUD->UnitAdded(GetActorLocation2d(), FColor::Blue);
