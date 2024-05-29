@@ -15,13 +15,11 @@
 
 AVillager::AVillager() : AMoveableUnit()
 {
-	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal"));
 }
 
 void AVillager::BeginPlay()
 {
 	Super::BeginPlay();
-	SetRootComponent(SkeletalMeshComponent);
 	
 	UResourceHarvestingComponent* ResourceHarvestingComponent = NewObject<UResourceHarvestingComponent>(this, UResourceHarvestingComponent::StaticClass(), TEXT("Harvester"), RF_NoFlags, UResourceHarvestingComponent::StaticClass()->GetDefaultObject(), true);
 	ResourceHarvestingComponent->RegisterComponent();

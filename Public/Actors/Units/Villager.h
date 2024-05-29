@@ -30,8 +30,6 @@ public:
 	const FInventory& GetInventory() const;
 	void GoBackToDropoff();
 protected:
-	UPROPERTY(EditDefaultsOnly)
-	USkeletalMeshComponent* SkeletalMeshComponent;
 	void ReachedDropoff();
 	virtual void OnFinalPathfindingGoalReached() override;
 	UPROPERTY()
