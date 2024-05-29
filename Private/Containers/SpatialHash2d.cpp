@@ -31,9 +31,26 @@ void FSpatialHash2d::InsertPoint(const uint32 PointID, const FVector2d& Location
  */
 void FSpatialHash2d::InsertPoints(const uint32 PointID, const FVector2d& Location, const FVector2d& UnitSize)
 {
-	for (int RowCounter = 0; RowCounter < UnitSize.X; RowCounter += 100)
+	for (int RowCounter = 0; RowCounter < UnitSize.X; RowCounter += Indexer.CellSize)
 	{
-		for (int ColumnCounter = 0; ColumnCounter < UnitSize.Y; ColumnCounter += 100)
+		for (int ColumnCounter = 0; ColumnCounter < UnitSize.Y; ColumnCounter += Indexer.CellSize)
+		{
+			InsertPoint(PointID, Location + FVector2d(RowCounter, ColumnCounter));
+		}
+	}
+}
+
+/**
+ * Insert at given positions. This function is thread-safe.
+ * @param PointID the point's id to insert
+ * @param Location the location associated with this PointID
+ * @param Radius the radius of the object
+ */
+void FSpatialHash2d::InsertPoints(const uint32 PointID, const FVector2d& Location,const int32& Radius)
+{
+	for (int RowCounter = -Radius; RowCounter <= Radius; RowCounter += Indexer.CellSize)
+	{
+		for (int ColumnCounter = -Radius; ColumnCounter <= Radius; ColumnCounter += Indexer.CellSize)
 		{
 			InsertPoint(PointID, Location + FVector2d(RowCounter, ColumnCounter));
 		}
@@ -68,7 +85,7 @@ bool FSpatialHash2d::RemovePoint(const uint32 PointID, const FVector2d& Location
 
 /**
  * Remove at given position, without locking / thread-safety
- * @param PointID the point's id to insert
+ * @param PointID the point's id to remove
  * @param Location the location associated with this PointID
  * @return true if the value existed at this position
  */
@@ -78,11 +95,37 @@ bool FSpatialHash2d::RemovePointUnsafe(const uint32 PointID, const FVector2d& Lo
 	return Hash.RemoveSingle(IndexID, PointID) > 0;
 }
 
+
+/**
+ * Remove at given positions. without locking / thread-safety.
+ * @param PointID the point's id to remove
+ * @param Location the location associated with this PointID
+ * @param UnitSize the size of the object
+ */
+
 void FSpatialHash2d::RemovePointsUnsafe(const uint32 PointID, const FVector2d& Location, const FVector2d& UnitSize)
 {
-	for (int RowCounter = 0; RowCounter < UnitSize.X; RowCounter += 100)
+	for (int RowCounter = 0; RowCounter < UnitSize.X; RowCounter += Indexer.CellSize)
 	{
-		for (int ColumnCounter = 0; ColumnCounter < UnitSize.Y; ColumnCounter += 100)
+		for (int ColumnCounter = 0; ColumnCounter < UnitSize.Y; ColumnCounter += Indexer.CellSize)
+		{
+			RemovePointUnsafe(PointID, Location + FVector2d(RowCounter, ColumnCounter));
+		}
+	}
+}
+
+/**
+ * Remove at given positions. without locking / thread-safety.
+ * @param PointID the point's id to remove
+ * @param Location the location associated with this PointID
+ * @param Radius the radius of the object
+ */
+
+void FSpatialHash2d::RemovePointsUnsafe(const uint32 PointID, const FVector2d& Location, const int32& Radius)
+{
+	for (int RowCounter = -Radius; RowCounter <= Radius; RowCounter += Indexer.CellSize)
+	{
+		for (int ColumnCounter = -Radius; ColumnCounter <= Radius; ColumnCounter += Indexer.CellSize)
 		{
 			RemovePointUnsafe(PointID, Location + FVector2d(RowCounter, ColumnCounter));
 		}
@@ -331,6 +374,14 @@ TOptional<uint32> FSpatialHash2d::GetPointInGrid(uint32 GridId, TFunctionRef<boo
 		}
 	}
 	return NullOpt;
+}
+
+TArray<uint32> FSpatialHash2d::GetPointsInGrid(const FVector2d& GridLocation)
+{
+	TArray<uint32> Values;
+	uint32 GridId = Indexer.ToGrid(GridLocation);
+	Hash.MultiFind(GridId, Values);
+	return Values;
 }
 
 /**
