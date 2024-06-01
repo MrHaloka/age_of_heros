@@ -1,4 +1,4 @@
-﻿#include "Components/SteeringComponent.h"
+﻿#include "Components/Movement/SteeringComponent.h"
 
 #include "Actors/Units/MoveableUnit.h"
 #include "GamePlay/GameStatics.h"
@@ -17,7 +17,6 @@ FVector2d USteeringComponent::Seek(FVector2d Goal)
 
 FVector2d USteeringComponent::Avoidance(AMoveableUnit* MoveableObstacle, const float& TTC)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TTC IS %f"), TTC)
 	if (TTC == 0 || LastObstacleId != 0 && LastObstacleId != MoveableObstacle->GetID())
 	{
 		MoveableObstacle->TurnoffMovingCollisionTemporary();
