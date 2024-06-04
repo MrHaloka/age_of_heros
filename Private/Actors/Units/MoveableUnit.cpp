@@ -1,6 +1,7 @@
 #include "Actors/Units/MoveableUnit.h"
 
-#include "Components/SteeringComponent.h"
+#include "Components/Movement/ChasingComponent.h"
+#include "Components/Movement/SteeringComponent.h"
 #include "DataStructures/PathLinkedList.h"
 #include "GamePlay/GameStatics.h"
 #include "Kismet/GameplayStatics.h"
@@ -11,13 +12,10 @@ AMoveableUnit::AMoveableUnit() : ABaseUnit()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	CreateDefaultSubobject<USteeringComponent>(TEXT("Steering Component"));
+	CreateDefaultSubobject<UChasingComponent>(TEXT("Chasing Component"));
 	OnPathfindingGoalReachEvent.AddUFunction(this, "OnFinalPathfindingGoalReached");
 	SkeletalMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal"));
 	SetRootComponent(SkeletalMeshComponent);
-
-void AMoveableUnit::SetIsMoving(bool BMoving)
-{
-	bIsMoving = BMoving;
 }
 
 void AMoveableUnit::SetupPathing(FPathLinkedList* NewPath)
@@ -28,7 +26,7 @@ void AMoveableUnit::SetupPathing(FPathLinkedList* NewPath)
 	}
 	Path = NewPath;
 	StartPathing();
-	SetIsMoving(true);
+	CurrentVelocity = GetComponentByClass<USteeringComponent>()->Seek(Goal);
 }
 
 void AMoveableUnit::UpdateActorRotation()
@@ -43,6 +41,22 @@ void AMoveableUnit::StartPathing()
 	bIsOnPath = true;
 	Goal = GetLastPath();
 	GoalVelocity = GetComponentByClass<USteeringComponent>()->Seek(Goal);
+}
+
+void AMoveableUnit::Chase(ABaseUnit* Unit, uint32 MaxDistance) const
+{
+	GetComponentByClass<UChasingComponent>()->BeginChase(Unit, MaxDistance);
+}
+
+void AMoveableUnit::Chase(ABaseUnit* Unit) const
+{
+	GetComponentByClass<UChasingComponent>()->BeginChase(Unit, GetCollisionRadius() + Unit->GetCollisionRadius());
+}
+
+void AMoveableUnit::StopChasing(EUnitState StopChasingState)
+{
+	GetComponentByClass<UChasingComponent>()->EndChase();
+	Stop(StopChasingState);
 }
 
 void AMoveableUnit::MoveTo(const FVector2d& Location, EUnitState MovingState)
@@ -83,6 +97,17 @@ void AMoveableUnit::TurnoffMovingCollisionTemporary()
 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMoveableUnit::SetMovingCollisionBack, 2, false);
 }
 
+void AMoveableUnit::Stop(EUnitState State)
+{
+	if (Path != nullptr)
+	{
+		Path->DeleteList();
+	}
+	GoalVelocity = FVector2d::Zero();
+	CurrentVelocity = FVector2d::Zero();
+	SetUnitState(State);
+}
+
 FVector2d AMoveableUnit::GetLastPath()
 {
 	FVector2d CurrentPath = Path->GetPath();
@@ -120,7 +145,6 @@ void AMoveableUnit::GoalReached()
 		StartPathing();
 		return;
 	}
-	SetIsMoving(false);
 	CurrentVelocity = FVector2d::Zero();
 	GoalVelocity = FVector2d::Zero();
 	OnPathfindingGoalReachEvent.Broadcast();
@@ -140,7 +164,8 @@ FVector2d AMoveableUnit::CalculateNewLocation(const float& DeltaSeconds)
 
 void AMoveableUnit::MoveTowardGoal(const float& DeltaSeconds)
 {
-	CurrentVelocity = GetComponentByClass<USteeringComponent>()->Seek(Goal);
+	GoalVelocity = GetComponentByClass<USteeringComponent>()->Seek(Goal);
+	CurrentVelocity = GoalVelocity;
 	CurrentVelocity = GetComponentByClass<USteeringComponent>()->Avoidance();
 	FVector2d NewLocation = CalculateNewLocation(DeltaSeconds);
 	if (AActor* BlockingActor = CheckIfNewLocationBlocked(NewLocation))
@@ -173,6 +198,11 @@ AMoveableUnit::FOnPathfindingGoalReachEvent& AMoveableUnit::GetFinalPathfindingG
 	return OnPathfindingGoalReachEvent;
 }
 
+UChasingComponent::FOnReachingTargetEvent& AMoveableUnit::GetOnReachingTargetEventHandler()
+{
+	return GetComponentByClass<UChasingComponent>()->OnReachingTargetEvent;
+}
+
 void AMoveableUnit::BeginPlay()
 {
 	Super::BeginPlay();
@@ -181,7 +211,7 @@ void AMoveableUnit::BeginPlay()
 void AMoveableUnit::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bIsMoving)
+	if (!GoalVelocity.IsZero())
 	{
 		MoveTowardGoal(DeltaSeconds);
 	}

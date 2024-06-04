@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Actors/Units/BaseUnit.h"
+#include "Components/Movement/ChasingComponent.h"
 #include "Enums/UnitState.h"
 #include "MoveableUnit.generated.h"
 
@@ -16,17 +17,20 @@ protected:
 	USkeletalMeshComponent* SkeletalMeshComponent;
 public:
 	AMoveableUnit();
-	void SetIsMoving(bool BMoving);
 	void SetupPathing(FPathLinkedList* NewPath);
 	void UpdateActorRotation();
 	void StartPathing();
+	void Chase(ABaseUnit* Unit, uint32 MaxDistance) const;
+	void Chase(ABaseUnit* Unit) const;
+	void StopChasing(EUnitState StopChasingState = Idle);
 	virtual void MoveTo(const FVector2d& Location, EUnitState MovingState = Moving);
 	float GetSpeed() const;
 	FVector2d GetGoalVelocity() const;
 	float GetAcceptableCollisionError() const;
 	void SetMovingCollisionBack();
 	void TurnoffMovingCollisionTemporary();
-	UPROPERTY(EditDefaultsOnly)
+	void Stop(EUnitState State = Idle);
+	UPROPERTY(EditDefaultsOnly, Category="movement")
 	float Speed = 1;
 	FVector2d GetVelocity2d() const;
 	virtual FVector GetVelocity() const override;
@@ -55,4 +59,5 @@ protected:
 	virtual void OnFinalPathfindingGoalReached();
 public:
 	FOnPathfindingGoalReachEvent& GetFinalPathfindingGoalReachEventHandler();
+	UChasingComponent::FOnReachingTargetEvent& GetOnReachingTargetEventHandler();
 };
