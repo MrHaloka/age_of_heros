@@ -11,5 +11,8 @@ enum EUnitState : int
 	Harvesting UMETA(Displayname = "Gathering"),
 	Moving_To_Dropoff UMETA(Displayname = "Moving Towards Dropoff"),
 	Attacking UMETA(Displayname = "Attacking"),
-	Dying UMETA(Displayname = "Dying")
+	Dying UMETA(Displayname = "Dying"),
+	Patrolling UMETA(Displayname = "Patrolling"),
+	Chasing UMETA(Displayname = "Chasing"),
+	Chasing_Stop UMETA(Displayname = "Chasing Stop")
 };
