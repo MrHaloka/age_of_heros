@@ -21,12 +21,12 @@ void FPerceptionManager::UnitAddedToGridListener(const ABaseUnit* AddedUnit, boo
 	}
 	for (uint32 UnitId : PerceptionGrid->GetPointsInGrid(AddedUnit->GetActorLocation2d()))
 	{
-		const ABaseUnit* Unit = ObjectsManager->GetUnits().FindChecked(UnitId);
-		if (FVector2d::DistSquared(Unit->GetActorLocation2d(), AddedUnit->GetActorLocation2d()) > Unit->GetComponentByClass<USightComponent>()->GetPerceptionRadiusSquare())
+		const ABaseUnit* Observer = ObjectsManager->GetUnits().FindChecked(UnitId);
+		if (FVector2d::DistSquared(Observer->GetActorLocation2d(), AddedUnit->GetActorLocation2d()) > Observer->GetComponentByClass<USightComponent>()->GetPerceptionRadiusSquare())
 		{
 			continue;
 		}
-		Unit->GetComponentByClass<USightComponent>()->Sensed(AddedUnit);
+		Observer->GetComponentByClass<USightComponent>()->Sensed(AddedUnit);
 	}
 }
 
@@ -48,16 +48,16 @@ void FPerceptionManager::UnitMovedListener(AMoveableUnit* Moved, const FVector2D
 	}
 }
 
-void FPerceptionManager::RegisterUnitSightPerception(const ABaseUnit* Unit)
+void FPerceptionManager::RegisterUnitSightPerception(const ABaseUnit* NewObserver)
 {
-	check(Unit->GetComponentByClass<USightComponent>() != nullptr)
+	check(NewObserver->GetComponentByClass<USightComponent>() != nullptr)
 	PerceptionGrid->InsertPoints(
-		Unit->GetID(),
-		Unit->GetComponentByClass<USightComponent>()->GetPerceptionCenter(),
-		Unit->GetComponentByClass<USightComponent>()->GetPerceptionRadius()
+		NewObserver->GetID(),
+		NewObserver->GetComponentByClass<USightComponent>()->GetPerceptionCenter(),
+		NewObserver->GetComponentByClass<USightComponent>()->GetPerceptionRadius()
 		);
-	const TSet<uint32> SensedUnits = ObjectsManager->GetUnitsInLocation(Unit->GetComponentByClass<USightComponent>()->GetPerceptionCenter(), Unit->GetComponentByClass<USightComponent>()->GetPerceptionRadius(), Unit->GetID());
-	CheckSensedUnits(Unit, SensedUnits);
+	const TSet<uint32> SensedUnits = ObjectsManager->GetUnitsInLocation(NewObserver->GetComponentByClass<USightComponent>()->GetPerceptionCenter(), NewObserver->GetComponentByClass<USightComponent>()->GetPerceptionRadius(), NewObserver->GetID());
+	CheckSensedUnits(NewObserver, SensedUnits);
 }
 
 void FPerceptionManager::RemoveUnitSightPerception(const ABaseUnit* Unit)
@@ -68,6 +68,21 @@ void FPerceptionManager::RemoveUnitSightPerception(const ABaseUnit* Unit)
 		Unit->GetComponentByClass<USightComponent>()->GetPerceptionCenter(),
 		Unit->GetComponentByClass<USightComponent>()->GetPerceptionRadius()
 		);
+}
+
+ABaseUnit* FPerceptionManager::GetFirstEnemyInPerception(ABaseUnit* Observer)
+{
+	const TSet<uint32> SensedUnits = ObjectsManager->GetUnitsInLocation(Observer->GetComponentByClass<USightComponent>()->GetPerceptionCenter(), Observer->GetComponentByClass<USightComponent>()->GetPerceptionRadius(), Observer->GetID());
+	for (uint32 UnitId : SensedUnits)
+	{
+		ABaseUnit* Unit = ObjectsManager->GetUnits().FindChecked(UnitId);
+		if (Unit->GetTeam() == Observer->GetTeam() || FVector2d::DistSquared(Unit->GetActorLocation2d(), Observer->GetActorLocation2d()) > Observer->GetComponentByClass<USightComponent>()->GetPerceptionRadiusSquare())
+		{
+			continue;
+		}
+		return Unit;
+	}
+	return  nullptr;
 }
 
 void FPerceptionManager::NotifyObserver(const ABaseUnit* Observer, const uint32& SensedUnitId)
