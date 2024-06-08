@@ -34,6 +34,8 @@ protected:
 	UDataTable* Upgrades;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UDataTable* ResourcesInfo;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UDataTable* ProjectilesInfo;
 	bool BGameModeLoaded = false;
 	/**
 	 * It needs to be set by the map generator or from a menu. It's hardcoded for now since I don't have any dynamic maps.

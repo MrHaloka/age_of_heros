@@ -1,6 +1,8 @@
 #include "GamePlay/GameStatics.h"
 
+#include "Actors/Projectils/BaseProjectile.h"
 #include "DataStructures/BuildingInfo.h"
+#include "DataStructures/ProjectileInfo.h"
 #include "DataStructures/ResourcesInfo.h"
 #include "DataStructures/UnitInfo.h"
 #include "DataStructures/Upgrades.h"
@@ -35,6 +37,18 @@ void GameStatics::LoadBuildings(const UDataTable& BuildingInfo)
 		Buildings.Add(ID, Data);
 		BuildingClassIDS.Add(Data.UnitClass->GetFName(), ID);
 		BuildingClassIDS.Add(Data.ConstructionClass->GetFName(), ID);
+	}
+}
+
+void GameStatics::LoadProjectiles(const UDataTable& ProjectilesInfoInit)
+{
+	TArray<FName> Rows = ProjectilesInfoInit.GetRowNames();
+	for (auto Row : Rows)
+	{
+		int ID = FCString::Atoi(*Row.ToString());
+		FProjectileInfo Data = *ProjectilesInfoInit.FindRow<FProjectileInfo>(*FString::FromInt(ID), "ID", true);
+		Projectiles.Add(ID, Data);
+		ProjectileClassIDS.Add(Data.ProjectileClass->GetFName(), ID);
 	}
 }
 
@@ -94,31 +108,42 @@ TMap<int32, FBuildingInfo>& GameStatics::GetBuildings()
 	return Buildings;
 }
 
-FUpgrades* GameStatics::GetUpgradeByID(int32 ID)
+FUpgrades* GameStatics::GetUpgradeByID(const int32& ID)
 {
 	return Upgrades.Find(ID);
 }
 
-const FResourcesInfo* GameStatics::GetResourceByID(int32 ID)
+const FResourcesInfo* GameStatics::GetResourceByID(const int32& ID)
 {
 	return ResourcesInfo.Find(ID);
 }
 
 
-void GameStatics::Initialize(const UDataTable& UnitInfoInit, const UDataTable& BuildingInfo, const UDataTable& UpgradeInfoInit, const UDataTable& ResourcesInfoInit)
+void GameStatics::Initialize(const UDataTable& UnitInfoInit, const UDataTable& BuildingInfo, const UDataTable& UpgradeInfoInit, const UDataTable& ResourcesInfoInit, const UDataTable& ProjectilesInfoInit)
 {
 	LoadUnits(UnitInfoInit);
 	LoadBuildings(BuildingInfo);
 	LoadUpgrades(UpgradeInfoInit);
 	LoadResources(ResourcesInfoInit);
+	LoadProjectiles(ProjectilesInfoInit);
 }
 
-FUnitInfo* GameStatics::GetUnitReferenceByID(int32 ID)
+FUnitInfo* GameStatics::GetUnitReferenceByID(const int32& ID)
 {
 	return Units.Find(ID);
 }
 
-FBuildingInfo* GameStatics::GetBuildingReferenceByID(int32 ID)
+FBuildingInfo* GameStatics::GetBuildingReferenceByID(const int32& ID)
 {
 	return Buildings.Find(ID);
+}
+
+FProjectileInfo* GameStatics::GetProjectileInfoByID(const int32& ID)
+{
+	return Projectiles.Find(ID);
+}
+
+FProjectileInfo* GameStatics::GetProjectileInfoByClassName(const FName& ClassName)
+{
+	return Projectiles.Find(ProjectileClassIDS.FindChecked(ClassName));
 }
