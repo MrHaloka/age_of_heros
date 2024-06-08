@@ -45,3 +45,12 @@ uint32 USightComponent::GetPerceptionRadiusSquare()
 {
 	return PerceptionRadius*PerceptionRadius;
 }
+
+ABaseUnit* USightComponent::GetFirstEnemyInPerception()
+{
+	if (ARTSGameMode* GameMode = Cast<ARTSGameMode>(UGameplayStatics::GetGameMode(GetWorld())))
+	{
+		return GameMode->GetObjectManager()->GetPerceptionManager()->GetFirstEnemyInPerception(StaticCast<ABaseUnit*>(GetOwner()));
+	}
+	return nullptr;
+}

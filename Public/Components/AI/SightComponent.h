@@ -24,6 +24,7 @@ public:
 	FVector2d GetPerceptionCenter();
 	uint32 GetPerceptionRadius();
 	uint32 GetPerceptionRadiusSquare();
+	ABaseUnit* GetFirstEnemyInPerception();
 	UFUNCTION()
 	void Sensed(const ABaseUnit* Unit);
 public:
