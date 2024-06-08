@@ -9,7 +9,7 @@ struct FUnitInfo : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 public:
-	FUnitInfo() : CollisionRadius(0), MaxHP(0), FoodPrice(0), WoodPrice(0), GoldPrice(0), StonePrice(0),
+	FUnitInfo() : CollisionRadius(0),Height(0), MaxHP(0), FoodPrice(0), WoodPrice(0), GoldPrice(0), StonePrice(0),
 	              PopulationPrice(0),TimeToComplete(0)
 	{
 	}
@@ -18,6 +18,8 @@ public:
 	FString Name;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 CollisionRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Height;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 MaxHP;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
