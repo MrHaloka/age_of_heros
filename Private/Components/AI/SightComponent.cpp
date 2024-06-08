@@ -1,5 +1,6 @@
 #include "Components/AI/SightComponent.h"
 
+#include "Actors/Units/Buildings/BaseBuilding.h"
 #include "GamePlay/GameStatics.h"
 #include "GamePlay/RTSGameMode.h"
 #include "Kismet/GameplayStatics.h"
@@ -28,7 +29,11 @@ void USightComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 FVector2d USightComponent::GetPerceptionCenter()
 {
-	return StaticCast<ABaseUnit*>(GetOwner())->GetActorLocation2d();
+	if (ABaseBuilding* BuildingOwner = Cast<ABaseBuilding>(GetOwner()))
+	{
+		return BuildingOwner->GetBuildingInfo()->GetSize() / 2 + BuildingOwner->GetActorLocation2d();
+	}
+	return FVector2d(GetOwner()->GetActorLocation());
 }
 
 uint32 USightComponent::GetPerceptionRadius()
