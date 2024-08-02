@@ -69,6 +69,16 @@ FVector2d ABaseBuilding::GetSize()
 	return GameStatics::GetBuildingReferenceByID(GameStatics::GetClassTypeId(this->GetClass()->GetFName()))->GetSize();
 }
 
+FVector2d ABaseBuilding::GetActorCenterLocation2d()
+{
+	return GetActorLocation2d() + GetBuildingInfo()->GetSize() / 2;
+}
+
+uint32 ABaseBuilding::GetActorHeight()
+{
+	return GetBuildingInfo()->SizeZ;
+}
+
 float ABaseBuilding::GetMaxHP()
 {
 	return GameStatics::GetBuildingReferenceByID(GameStatics::GetClassTypeId(this->GetClass()->GetFName()))->MaxHP;

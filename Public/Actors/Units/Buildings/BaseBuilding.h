@@ -18,6 +18,8 @@ public:
 	virtual FResources GetPrice() override;
 	FVector2d GetClosestEmptySlot(const FVector2d& TargetLocation);
 	virtual FVector2d GetSize() override;
+	virtual FVector2d GetActorCenterLocation2d() override;
+	virtual uint32 GetActorHeight() override;
 protected:
 	virtual float GetMaxHP() override;
 	virtual void BeginPlay() override;
